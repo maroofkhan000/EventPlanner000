@@ -1,0 +1,625 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+const Services = () => {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  useEffect(() => {
+    fetchServices();
+  }, [selectedCategory]);
+
+  const fetchServices = async () => {
+    try {
+      const params = selectedCategory ? `?category=${selectedCategory}` : "";
+      const response = await axios.get(`/services${params}`);
+      setServices(response.data.services || []);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to get category-specific images
+  const getServiceImage = (category, serviceImages) => {
+    if (serviceImages && serviceImages.length > 0) {
+      return serviceImages[0];
+    }
+
+    const categoryImages = {
+      catering:
+        "https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      makeup:
+        "https://images.unsplash.com/photo-1596464716127-f2a82984de30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      photography:
+        "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      videography:
+        "https://images.unsplash.com/photo-1573152952140-248e023f5c86?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      decoration:
+        "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      music:
+        "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      mehndi:
+        "https://images.unsplash.com/photo-1603538520133-deb6c3d0f0c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+    };
+
+    return (
+      categoryImages[category] ||
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+    );
+  };
+
+  const categories = [
+    { value: "catering", label: "Catering", icon: "fa-utensils" },
+    { value: "makeup", label: "Makeup Artists", icon: "fa-palette" },
+    { value: "photography", label: "Photography", icon: "fa-camera" },
+    { value: "videography", label: "Videography", icon: "fa-video" },
+    { value: "decoration", label: "Decoration", icon: "fa-ring" },
+    { value: "music", label: "Music & Entertainment", icon: "fa-music" },
+  ];
+
+  return (
+    <div className="services-page">
+      {/* Header Section */}
+      <div className="services-hero">
+        <div className="services-hero-content">
+          <h1 className="services-title">Premium Wedding Services</h1>
+          <p className="services-subtitle">
+            Complete your dream wedding with our curated selection of premium
+            services
+          </p>
+          <div className="services-stats">
+            <div className="stat">
+              <span className="stat-number">50+</span>
+              <span className="stat-label">Service Providers</span>
+            </div>
+            <div className="stat">
+              <span className="stat-number">1000+</span>
+              <span className="stat-label">Happy Couples</span>
+            </div>
+            <div className="stat">
+              <span className="stat-number">24/7</span>
+              <span className="stat-label">Support</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container">
+        {/* Category Filter */}
+        <div className="category-section">
+          <h2 className="category-title">Browse by Category</h2>
+          <div className="category-filters">
+            <button
+              className={`category-filter ${!selectedCategory ? "active" : ""}`}
+              onClick={() => setSelectedCategory("")}
+            >
+              <i className="fas fa-star"></i>
+              All Services
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category.value}
+                className={`category-filter ${
+                  selectedCategory === category.value ? "active" : ""
+                }`}
+                onClick={() => setSelectedCategory(category.value)}
+              >
+                <i className={`fas ${category.icon}`}></i>
+                {category.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Services Grid */}
+        <div className="services-grid-section">
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading premium services...</p>
+            </div>
+          ) : services.length > 0 ? (
+            <div className="services-grid">
+              {services.map((service) => (
+                <div key={service._id} className="service-card">
+                  <div className="service-image">
+                    <img
+                      src={getServiceImage(service.category, service.images)}
+                      alt={service.name}
+                      className="service-img"
+                      onError={(e) => {
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80";
+                      }}
+                    />
+                    <div className="service-category-badge">
+                      {service.category}
+                    </div>
+                  </div>
+
+                  <div className="service-content">
+                    <div className="service-header">
+                      <h3 className="service-name">{service.name}</h3>
+                      <p className="service-provider">
+                        by {service.providerName}
+                      </p>
+                    </div>
+
+                    <div className="service-location">
+                      <i className="fas fa-map-marker-alt"></i>
+                      {service.location?.city}, {service.location?.state}
+                    </div>
+
+                    <p className="service-description">{service.description}</p>
+
+                    {service.features && service.features.length > 0 && (
+                      <div className="service-features">
+                        {service.features.slice(0, 3).map((feature, index) => (
+                          <span key={index} className="feature-tag">
+                            {feature}
+                          </span>
+                        ))}
+                        {service.features.length > 3 && (
+                          <span className="feature-tag">
+                            +{service.features.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="service-footer">
+                      <div className="service-price">
+                        ₹{service.price?.toLocaleString()}
+                      </div>
+                      <div className="service-rating">
+                        <i className="fas fa-star"></i>
+                        <span>{service.rating || "4.5"}/5</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-results">
+              <i className="fas fa-search no-results-icon"></i>
+              <h3>No Services Found</h3>
+              <p>
+                We couldn't find any services in this category. Try selecting a
+                different category.
+              </p>
+              <button
+                className="clear-filter-btn"
+                onClick={() => setSelectedCategory("")}
+              >
+                Show All Services
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .services-page {
+          min-height: 100vh;
+          background: linear-gradient(
+            135deg,
+            #f8f0e3 0%,
+            #fff 50%,
+            #f8f0e3 100%
+          );
+        }
+
+        /* Hero Section */
+        .services-hero {
+          background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+          color: white;
+          padding: 100px 0 80px;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .services-hero::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+          opacity: 0.3;
+        }
+
+        .services-hero-content {
+          position: relative;
+          z-index: 2;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 0 20px;
+        }
+
+        .services-title {
+          font-size: 3.5rem;
+          font-weight: 700;
+          margin-bottom: 20px;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .services-subtitle {
+          font-size: 1.3rem;
+          margin-bottom: 40px;
+          opacity: 0.9;
+          line-height: 1.6;
+        }
+
+        .services-stats {
+          display: flex;
+          justify-content: center;
+          gap: 60px;
+          flex-wrap: wrap;
+        }
+
+        .stat {
+          text-align: center;
+        }
+
+        .stat-number {
+          display: block;
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 5px;
+        }
+
+        .stat-label {
+          font-size: 0.9rem;
+          opacity: 0.8;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 20px;
+        }
+
+        /* Category Section */
+        .category-section {
+          padding: 60px 0 40px;
+          text-align: center;
+        }
+
+        .category-title {
+          font-size: 2.2rem;
+          color: #333;
+          margin-bottom: 30px;
+          font-weight: 600;
+        }
+
+        .category-filters {
+          display: flex;
+          justify-content: center;
+          gap: 15px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+        }
+
+        .category-filter {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 24px;
+          background: white;
+          border: 2px solid #e0e0e0;
+          border-radius: 25px;
+          color: #666;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 0.95rem;
+        }
+
+        .category-filter:hover {
+          border-color: #d4af37;
+          color: #d4af37;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+        }
+
+        .category-filter.active {
+          background: #d4af37;
+          border-color: #d4af37;
+          color: white;
+          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .category-filter i {
+          font-size: 1rem;
+        }
+
+        /* Services Grid */
+        .services-grid-section {
+          padding: 40px 0 80px;
+        }
+
+        .loading-container {
+          text-align: center;
+          padding: 60px 20px;
+          color: #d4af37;
+        }
+
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #d4af37;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 20px;
+        }
+
+        .services-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 30px;
+        }
+
+        .service-card {
+          background: white;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+          border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .service-card:hover {
+          transform: translateY(-10px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-image {
+          position: relative;
+          height: 200px;
+          overflow: hidden;
+        }
+
+        .service-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
+        .service-card:hover .service-img {
+          transform: scale(1.1);
+        }
+
+        .service-category-badge {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: rgba(212, 175, 55, 0.95);
+          color: white;
+          padding: 6px 15px;
+          border-radius: 15px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: capitalize;
+        }
+
+        .service-content {
+          padding: 25px;
+        }
+
+        .service-header {
+          margin-bottom: 15px;
+        }
+
+        .service-name {
+          font-size: 1.4rem;
+          color: #333;
+          margin: 0 0 5px 0;
+          font-weight: 700;
+          line-height: 1.3;
+        }
+
+        .service-provider {
+          color: #d4af37;
+          margin: 0;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+
+        .service-location {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #666;
+          font-size: 0.9rem;
+          margin-bottom: 15px;
+        }
+
+        .service-location i {
+          color: #d4af37;
+        }
+
+        .service-description {
+          color: #666;
+          line-height: 1.6;
+          margin-bottom: 15px;
+          font-size: 0.95rem;
+        }
+
+        .service-features {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 20px;
+        }
+
+        .feature-tag {
+          background: #f8f0e3;
+          color: #333;
+          padding: 6px 12px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 500;
+          border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .service-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 20px;
+        }
+
+        .service-price {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #d4af37;
+          background: linear-gradient(45deg, #d4af37, #b8941f);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .service-rating {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          color: #666;
+          font-weight: 600;
+        }
+
+        .service-rating i {
+          color: #ffd700;
+        }
+
+        /* No Results */
+        .no-results {
+          text-align: center;
+          padding: 80px 20px;
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-results-icon {
+          font-size: 4rem;
+          color: #ddd;
+          margin-bottom: 20px;
+        }
+
+        .no-results h3 {
+          color: #333;
+          margin-bottom: 15px;
+          font-size: 1.5rem;
+        }
+
+        .no-results p {
+          color: #666;
+          margin-bottom: 25px;
+          max-width: 400px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .clear-filter-btn {
+          padding: 12px 30px;
+          background: #d4af37;
+          color: white;
+          border: none;
+          border-radius: 25px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 1rem;
+          transition: all 0.3s ease;
+        }
+
+        .clear-filter-btn:hover {
+          background: #b8941f;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Animations */
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .services-title {
+            font-size: 2.5rem;
+          }
+
+          .services-subtitle {
+            font-size: 1.1rem;
+          }
+
+          .services-stats {
+            gap: 30px;
+          }
+
+          .stat-number {
+            font-size: 2rem;
+          }
+
+          .category-filters {
+            gap: 10px;
+          }
+
+          .category-filter {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+          }
+
+          .services-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .service-footer {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .services-hero {
+            padding: 80px 0 60px;
+          }
+
+          .services-title {
+            font-size: 2rem;
+          }
+
+          .services-stats {
+            flex-direction: column;
+            gap: 20px;
+          }
+
+          .category-section {
+            padding: 40px 0 20px;
+          }
+
+          .category-title {
+            font-size: 1.8rem;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default Services;

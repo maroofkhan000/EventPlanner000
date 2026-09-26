@@ -1,0 +1,368 @@
+.package-builder {
+  padding: 100px 0 50px;
+  min-height: 100vh;
+  background: var(--gray);
+}
+
+.builder-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.builder-header h1 {
+  font-size: 2.5rem;
+  color: var(--dark);
+  margin-bottom: 15px;
+}
+
+.builder-header p {
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+/* Builder Steps */
+.builder-steps {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 50px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 100px;
+}
+
+.step-number {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-bottom: 10px;
+  transition: var(--transition);
+}
+
+.step.active .step-number {
+  background: var(--primary);
+  color: var(--light);
+}
+
+.step span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.step.active span {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Builder Step Content */
+.builder-step {
+  background: var(--light);
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: var(--shadow);
+  margin-bottom: 30px;
+}
+
+.builder-step h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--dark);
+}
+
+/* Venues Grid */
+.venues-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.venue-option {
+  border: 2px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.venue-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+}
+
+.venue-option.selected {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+.venue-image {
+  height: 200px;
+  overflow: hidden;
+}
+
+.venue-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.venue-info {
+  padding: 20px;
+}
+
+.venue-info h3 {
+  margin-bottom: 10px;
+  color: var(--dark);
+}
+
+.venue-info .location,
+.venue-info .capacity {
+  color: var(--text);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.venue-info .price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 10px;
+}
+
+/* Services Grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.service-option {
+  border: 2px solid #eee;
+  border-radius: 10px;
+  padding: 25px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.service-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+}
+
+.service-option.selected {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+.service-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+}
+
+.service-icon i {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.service-option h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--dark);
+}
+
+.service-option p {
+  color: var(--text);
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.service-option .price {
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 10px;
+}
+
+/* Booking Details */
+.booking-details {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.booking-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.booking-section h3 {
+  margin-bottom: 15px;
+  color: var(--dark);
+}
+
+.selected-item {
+  background: var(--accent);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.selected-item h4 {
+  margin-bottom: 5px;
+  color: var(--dark);
+}
+
+.selected-item .price {
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 5px;
+}
+
+.booking-form {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.form-group textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+.booking-summary {
+  text-align: center;
+  padding: 20px;
+  background: var(--accent);
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.booking-summary h3 {
+  font-size: 1.8rem;
+  color: var(--primary);
+}
+
+/* Builder Navigation */
+.builder-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+}
+
+/* Confirmation Step */
+.confirmation {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+.confirmation-content i {
+  font-size: 4rem;
+  color: #28a745;
+  margin-bottom: 20px;
+}
+
+.confirmation-content h2 {
+  color: #28a745;
+  margin-bottom: 15px;
+}
+
+.confirmation-content p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .package-builder {
+    padding: 80px 0 30px;
+  }
+
+  .builder-step {
+    padding: 25px 20px;
+  }
+
+  .venues-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .builder-navigation {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .builder-navigation .btn {
+    width: 100%;
+  }
+
+  .confirmation-actions {
+    flex-direction: column;
+  }
+
+  .confirmation-actions .btn {
+    width: 100%;
+    max-width: 250px;
+  }
+}
