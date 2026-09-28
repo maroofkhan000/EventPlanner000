@@ -9,6 +9,10 @@ const VenueDetails = () => {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
+  // null = not checked yet, otherwise { available, message }
+  const [availability, setAvailability] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchVenueDetails();
@@ -26,12 +30,24 @@ const VenueDetails = () => {
     }
   };
 
-  const checkAvailability = () => {
+  const checkAvailability = async () => {
     if (!selectedDate) {
       toast.error("Please select a date to check availability");
       return;
     }
-    toast.success(`Availability checked for ${selectedDate}`);
+    setChecking(true);
+    try {
+      const { data } = await axios.get(
+        `/venues/${id}/availability?date=${selectedDate}`
+      );
+      setAvailability(data);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Could not check availability"
+      );
+    } finally {
+      setChecking(false);
+    }
   };
 
   // Function to get venue image - same logic as Venues.js
@@ -252,6 +268,7 @@ const VenueDetails = () => {
         }}
       >
         <div
+          className="main-content"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 400px",
@@ -457,6 +474,7 @@ const VenueDetails = () => {
 
           {/* Right Column - Booking Card */}
           <div
+            className="booking-card"
             style={{
               position: "sticky",
               top: "100px",
@@ -522,7 +540,11 @@ const VenueDetails = () => {
                 <input
                   type="date"
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  min={today}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setAvailability(null);
+                  }}
                   style={{
                     width: "100%",
                     padding: "12px 15px",
@@ -534,8 +556,31 @@ const VenueDetails = () => {
                 />
               </div>
 
+              {availability && (
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    marginBottom: "15px",
+                    fontWeight: "600",
+                    fontSize: "0.95rem",
+                    background: availability.available ? "#e8f5e9" : "#fdecea",
+                    color: availability.available ? "#2e7d32" : "#c62828",
+                  }}
+                >
+                  <i
+                    className={`fas ${
+                      availability.available ? "fa-check-circle" : "fa-times-circle"
+                    }`}
+                    style={{ marginRight: "8px" }}
+                  ></i>
+                  {availability.message}
+                </div>
+              )}
+
               <button
                 onClick={checkAvailability}
+                disabled={checking}
                 style={{
                   width: "100%",
                   padding: "14px",
@@ -558,11 +603,15 @@ const VenueDetails = () => {
                   e.target.style.color = "#d4af37";
                 }}
               >
-                Check Availability
+                {checking ? "Checking..." : "Check Availability"}
               </button>
 
               <Link
-                to={`/package-builder?venue=${venue._id}`}
+                to={`/package-builder?venue=${venue._id}${
+                  selectedDate && availability?.available
+                    ? `&date=${selectedDate}`
+                    : ""
+                }`}
                 style={{
                   display: "block",
                   width: "100%",
@@ -587,7 +636,7 @@ const VenueDetails = () => {
                   e.target.style.borderColor = "#d4af37";
                 }}
               >
-                Add to Package
+                Book This Venue
               </Link>
 
               <Link

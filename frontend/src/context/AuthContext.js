@@ -15,6 +15,20 @@ export const AuthProvider = ({ children }) => {
   axios.defaults.baseURL =
     process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
+  // Drop a stale/expired token whenever the API rejects it
+  useEffect(() => {
+    const id = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401 && localStorage.getItem("token")) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(id);
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {

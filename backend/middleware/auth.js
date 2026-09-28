@@ -2,27 +2,39 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const protect = async (req, res, next) => {
-  let token;
+  const header = req.headers.authorization;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  if (!header || !header.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Not authorized, no token" });
+  }
 
-      req.user = await User.findById(decoded.id).select("-password");
-      next();
-    } catch (error) {
-      console.error("Token verification error:", error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+  const token = header.split(" ")[1];
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .json({ message: "Session expired, please log in again" });
     }
+    console.error("Token verification error:", error.message);
+    return res.status(401).json({ message: "Not authorized, token failed" });
   }
 
-  if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
+  try {
+    req.user = await User.findById(decoded.id).select("-password");
+  } catch (error) {
+    console.error("Auth user lookup error:", error.message);
+    return res.status(500).json({ message: "Server error" });
   }
+
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authorized, user not found" });
+  }
+
+  next();
 };
 
 const admin = (req, res, next) => {

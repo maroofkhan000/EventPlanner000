@@ -1,82 +1,120 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 import "./PackageBuilder.css";
 
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80";
+
+// Display order and labels for service categories
+const CATEGORIES = [
+  { value: "photography", label: "Photographers", icon: "fa-camera" },
+  { value: "videography", label: "Videographers", icon: "fa-video" },
+  { value: "music", label: "DJ & Music", icon: "fa-music" },
+  { value: "catering", label: "Catering", icon: "fa-utensils" },
+  { value: "makeup", label: "Makeup Artists", icon: "fa-palette" },
+  { value: "decoration", label: "Decoration", icon: "fa-ring" },
+  { value: "mehndi", label: "Mehndi Artists", icon: "fa-hand-sparkles" },
+];
+
+const today = () => new Date().toISOString().split("T")[0];
+
 const PackageBuilder = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [venues, setVenues] = useState([]);
   const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedVenue, setSelectedVenue] = useState(null);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [eventDate, setEventDate] = useState("");
-  const [guestCount, setGuestCount] = useState(100);
+  // One chosen service per category: { [category]: service }
+  const [selectedServices, setSelectedServices] = useState({});
+  const [eventDate, setEventDate] = useState(searchParams.get("date") || "");
+  const [guestCount, setGuestCount] = useState(
+    searchParams.get("guests") || ""
+  );
   const [specialRequests, setSpecialRequests] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchVenues();
-    fetchServices();
-  }, []);
+    const load = async () => {
+      try {
+        const [venueRes, serviceRes] = await Promise.all([
+          axios.get("/venues?limit=100"),
+          axios.get("/services?limit=100"),
+        ]);
+        const venueList = venueRes.data.venues || [];
+        const serviceList = serviceRes.data.services || [];
+        setVenues(venueList);
+        setServices(serviceList);
 
-  const fetchVenues = async () => {
-    try {
-      const response = await axios.get("/venues?limit=20");
-      setVenues(response.data.venues);
-    } catch (error) {
-      console.error("Error fetching venues:", error);
-    }
-  };
+        // Pre-select from "Book this venue" / "Add to package" links
+        const venueId = searchParams.get("venue");
+        const preVenue = venueList.find((v) => v._id === venueId);
+        if (preVenue) {
+          setSelectedVenue(preVenue);
+          setGuestCount((g) => g || String(preVenue.capacity.min));
+          setStep(2);
+        }
 
-  const fetchServices = async () => {
-    try {
-      const response = await axios.get("/services");
-      setServices(response.data.services);
-    } catch (error) {
-      console.error("Error fetching services:", error);
-    }
-  };
+        const serviceId = searchParams.get("service");
+        const preService = serviceList.find((s) => s._id === serviceId);
+        if (preService) {
+          setSelectedServices({ [preService.category]: preService });
+        }
+      } catch (error) {
+        console.error("Error loading package data:", error);
+        toast.error("Failed to load venues and services");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Function to get venue image - special images for 3rd and 5th venues
-  const getVenueImage = (venue, index) => {
-    // For 3rd venue (index 2) - Luxury Lucknow Palace
-    if (index === 2) {
-      return "https://images.unsplash.com/photo-1624763149686-1893acf73092?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=600&q=80";
-    }
-    // For 5th venue (index 4) - Traditional Lucknow Banquet
-    if (index === 4) {
-      return "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=600&q=80";
-    }
-    // Default image for other venues
-    return (
-      venue.images?.[0] ||
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80"
-    );
-  };
+    load();
+  }, [searchParams]);
 
   const handleVenueSelect = (venue) => {
     setSelectedVenue(venue);
+    const guests = Number(guestCount);
+    if (!guests || guests < venue.capacity.min || guests > venue.capacity.max) {
+      setGuestCount(String(venue.capacity.min));
+    }
     setStep(2);
   };
 
   const handleServiceToggle = (service) => {
     setSelectedServices((prev) => {
-      const isSelected = prev.find((s) => s.service._id === service._id);
-      if (isSelected) {
-        return prev.filter((s) => s.service._id !== service._id);
+      const next = { ...prev };
+      if (prev[service.category]?._id === service._id) {
+        delete next[service.category];
       } else {
-        return [...prev, { service, quantity: 1, price: service.price }];
+        next[service.category] = service;
       }
+      return next;
     });
   };
 
-  const calculateTotal = () => {
-    let total = selectedVenue ? selectedVenue.price : 0;
-    selectedServices.forEach((item) => {
-      total += item.price * item.quantity;
-    });
-    return total;
+  const chosenServices = Object.values(selectedServices);
+
+  const calculateTotal = () =>
+    (selectedVenue ? selectedVenue.price : 0) +
+    chosenServices.reduce((sum, s) => sum + s.price, 0);
+
+  const validateDetails = () => {
+    if (!eventDate || eventDate < today()) {
+      toast.error("Please choose an upcoming event date");
+      return false;
+    }
+    const guests = Number(guestCount);
+    const { min, max } = selectedVenue.capacity;
+    if (!Number.isInteger(guests) || guests < min || guests > max) {
+      toast.error(`Guest count must be between ${min} and ${max}`);
+      return false;
+    }
+    return true;
   };
 
   const handleBooking = async () => {
@@ -84,29 +122,56 @@ const PackageBuilder = () => {
       toast.error("Please login to book");
       return;
     }
-
     if (!selectedVenue) {
       toast.error("Please select a venue");
+      setStep(1);
       return;
     }
+    if (!validateDetails()) return;
 
+    setSubmitting(true);
     try {
-      const bookingData = {
-        venue: selectedVenue._id,
-        services: selectedServices,
-        eventDate,
-        guestCount,
-        totalAmount: calculateTotal(),
-        specialRequests,
-      };
+      const { data } = await axios.get(
+        `/venues/${selectedVenue._id}/availability?date=${eventDate}`
+      );
+      if (!data.available) {
+        toast.error(data.message);
+        return;
+      }
 
-      await axios.post("/bookings", bookingData);
+      await axios.post("/bookings", {
+        venue: selectedVenue._id,
+        services: chosenServices.map((s) => ({ service: s._id })),
+        eventDate,
+        guestCount: Number(guestCount),
+        specialRequests,
+      });
       toast.success("Booking created successfully!");
       setStep(4);
     } catch (error) {
       toast.error(error.response?.data?.message || "Booking failed");
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  const imageOf = (item) => item.images?.[0] || FALLBACK_IMAGE;
+  const onImageError = (e) => {
+    e.target.onerror = null;
+    e.target.src = FALLBACK_IMAGE;
+  };
+
+  if (loading) {
+    return (
+      <div className="package-builder">
+        <div className="container">
+          <div className="builder-step">
+            <h2>Loading venues and services...</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="package-builder">
@@ -118,25 +183,41 @@ const PackageBuilder = () => {
 
         {/* Progress Steps */}
         <div className="builder-steps">
-          {[1, 2, 3, 4].map((num) => (
-            <div key={num} className={`step ${step >= num ? "active" : ""}`}>
-              <div className="step-number">{num}</div>
-              <span>
-                {num === 1 && "Select Venue"}
-                {num === 2 && "Add Services"}
-                {num === 3 && "Review & Book"}
-                {num === 4 && "Confirmation"}
-              </span>
-            </div>
-          ))}
+          {["Select Venue", "Add Services", "Review & Book", "Confirmation"].map(
+            (label, i) => (
+              <div
+                key={label}
+                className={`step ${step >= i + 1 ? "active" : ""}`}
+              >
+                <div className="step-number">{i + 1}</div>
+                <span>{label}</span>
+              </div>
+            )
+          )}
         </div>
+
+        {/* Running summary */}
+        {step > 1 && step < 4 && selectedVenue && (
+          <div className="package-summary-bar">
+            <div>
+              <strong>{selectedVenue.name}</strong>
+              {chosenServices.length > 0 &&
+                ` + ${chosenServices.length} service${
+                  chosenServices.length > 1 ? "s" : ""
+                }`}
+            </div>
+            <div className="summary-total">
+              ₹{calculateTotal().toLocaleString()}
+            </div>
+          </div>
+        )}
 
         {/* Step 1: Venue Selection */}
         {step === 1 && (
           <div className="builder-step">
             <h2>Choose Your Wedding Venue</h2>
             <div className="venues-grid">
-              {venues.map((venue, index) => (
+              {venues.map((venue) => (
                 <div
                   key={venue._id}
                   className={`venue-option ${
@@ -145,7 +226,16 @@ const PackageBuilder = () => {
                   onClick={() => handleVenueSelect(venue)}
                 >
                   <div className="venue-image">
-                    <img src={getVenueImage(venue, index)} alt={venue.name} />
+                    <img
+                      src={imageOf(venue)}
+                      alt={venue.name}
+                      onError={onImageError}
+                    />
+                    {selectedVenue?._id === venue._id && (
+                      <span className="selected-badge">
+                        <i className="fas fa-check"></i> Selected
+                      </span>
+                    )}
                   </div>
                   <div className="venue-info">
                     <h3>{venue.name}</h3>
@@ -154,8 +244,8 @@ const PackageBuilder = () => {
                       {venue.location.city}, {venue.location.state}
                     </p>
                     <p className="capacity">
-                      Capacity: {venue.capacity.min} - {venue.capacity.max}{" "}
-                      guests
+                      <i className="fas fa-users"></i>
+                      {venue.capacity.min} - {venue.capacity.max} guests
                     </p>
                     <p className="price">₹{venue.price.toLocaleString()}</p>
                   </div>
@@ -169,62 +259,110 @@ const PackageBuilder = () => {
         {step === 2 && (
           <div className="builder-step">
             <h2>Add Services to Your Package</h2>
-            <div className="services-grid">
-              {services.map((service) => (
-                <div
-                  key={service._id}
-                  className={`service-option ${
-                    selectedServices.find((s) => s.service._id === service._id)
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() => handleServiceToggle(service)}
-                >
-                  <div className="service-icon">
-                    <i
-                      className={`fas ${
-                        service.category === "catering"
-                          ? "fa-utensils"
-                          : service.category === "makeup"
-                          ? "fa-palette"
-                          : service.category === "photography"
-                          ? "fa-camera"
-                          : service.category === "videography"
-                          ? "fa-video"
-                          : "fa-ring"
-                      }`}
-                    ></i>
+            <p className="step-hint">
+              Pick one provider per category, or skip any you don't need. Click
+              a selected card again to remove it.
+            </p>
+
+            {CATEGORIES.map((cat) => {
+              const list = services.filter((s) => s.category === cat.value);
+              if (list.length === 0) return null;
+              return (
+                <div key={cat.value} className="service-category">
+                  <h3 className="service-category-title">
+                    <i className={`fas ${cat.icon}`}></i> {cat.label}
+                    {selectedServices[cat.value] && (
+                      <span className="category-chosen">
+                        <i className="fas fa-check-circle"></i> 1 selected
+                      </span>
+                    )}
+                  </h3>
+                  <div className="services-grid">
+                    {list.map((service) => {
+                      const isSelected =
+                        selectedServices[cat.value]?._id === service._id;
+                      return (
+                        <div
+                          key={service._id}
+                          className={`service-option ${
+                            isSelected ? "selected" : ""
+                          }`}
+                          onClick={() => handleServiceToggle(service)}
+                          role="button"
+                          aria-pressed={isSelected}
+                        >
+                          <div className="service-option-image">
+                            <img
+                              src={imageOf(service)}
+                              alt={service.name}
+                              onError={onImageError}
+                            />
+                            {isSelected && (
+                              <span className="selected-badge">
+                                <i className="fas fa-check"></i> Selected
+                              </span>
+                            )}
+                          </div>
+                          <div className="service-option-body">
+                            <h4>{service.name}</h4>
+                            <p className="provider">
+                              by {service.providerName}
+                            </p>
+                            <p className="meta">
+                              <span>
+                                <i className="fas fa-star"></i>{" "}
+                                {service.rating || "New"}
+                              </span>
+                              {service.experience && (
+                                <span>{service.experience} exp.</span>
+                              )}
+                            </p>
+                            {service.features?.length > 0 && (
+                              <div className="option-features">
+                                {service.features.slice(0, 3).map((f) => (
+                                  <span key={f}>{f}</span>
+                                ))}
+                              </div>
+                            )}
+                            <p className="price">
+                              ₹{service.price.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <h3>{service.name}</h3>
-                  <p>{service.providerName}</p>
-                  <p className="price">₹{service.price.toLocaleString()}</p>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+
             <div className="builder-navigation">
               <button className="btn btn-secondary" onClick={() => setStep(1)}>
-                Back
+                Change Venue
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setStep(3)}
-                disabled={selectedServices.length === 0}
-              >
-                Continue
+              <button className="btn btn-primary" onClick={() => setStep(3)}>
+                {chosenServices.length === 0
+                  ? "Skip Services & Continue"
+                  : "Continue"}
               </button>
             </div>
           </div>
         )}
 
         {/* Step 3: Review & Booking */}
-        {step === 3 && (
+        {step === 3 && selectedVenue && (
           <div className="builder-step">
             <h2>Review Your Package</h2>
             <div className="booking-details">
               <div className="booking-section">
                 <h3>Venue</h3>
-                {selectedVenue && (
-                  <div className="selected-item">
+                <div className="selected-item with-image">
+                  <img
+                    src={imageOf(selectedVenue)}
+                    alt={selectedVenue.name}
+                    onError={onImageError}
+                  />
+                  <div>
                     <h4>{selectedVenue.name}</h4>
                     <p>
                       {selectedVenue.location.city},{" "}
@@ -234,18 +372,43 @@ const PackageBuilder = () => {
                       ₹{selectedVenue.price.toLocaleString()}
                     </p>
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="booking-section">
                 <h3>Services</h3>
-                {selectedServices.map((item, index) => (
-                  <div key={index} className="selected-item">
-                    <h4>{item.service.name}</h4>
-                    <p>by {item.service.providerName}</p>
-                    <p className="price">₹{item.price.toLocaleString()}</p>
-                  </div>
-                ))}
+                {chosenServices.length === 0 ? (
+                  <p className="empty-note">
+                    No services added.{" "}
+                    <button className="link-button" onClick={() => setStep(2)}>
+                      Add services
+                    </button>
+                  </p>
+                ) : (
+                  chosenServices.map((service) => (
+                    <div key={service._id} className="selected-item with-image">
+                      <img
+                        src={imageOf(service)}
+                        alt={service.name}
+                        onError={onImageError}
+                      />
+                      <div>
+                        <h4>{service.name}</h4>
+                        <p>by {service.providerName}</p>
+                        <p className="price">
+                          ₹{service.price.toLocaleString()}
+                        </p>
+                      </div>
+                      <button
+                        className="remove-item"
+                        onClick={() => handleServiceToggle(service)}
+                        aria-label={`Remove ${service.name}`}
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
 
               <div className="booking-form">
@@ -256,18 +419,21 @@ const PackageBuilder = () => {
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={today()}
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label>Number of Guests</label>
+                  <label>
+                    Number of Guests ({selectedVenue.capacity.min} -{" "}
+                    {selectedVenue.capacity.max})
+                  </label>
                   <input
                     type="number"
                     value={guestCount}
                     onChange={(e) => setGuestCount(e.target.value)}
-                    min={selectedVenue?.capacity.min || 50}
-                    max={selectedVenue?.capacity.max || 500}
+                    min={selectedVenue.capacity.min}
+                    max={selectedVenue.capacity.max}
                     required
                   />
                 </div>
@@ -284,14 +450,25 @@ const PackageBuilder = () => {
               <div className="booking-summary">
                 <h3>Total: ₹{calculateTotal().toLocaleString()}</h3>
               </div>
+
+              {!user && (
+                <p className="empty-note">
+                  You need to <Link to="/login">log in</Link> to confirm this
+                  booking.
+                </p>
+              )}
             </div>
 
             <div className="builder-navigation">
               <button className="btn btn-secondary" onClick={() => setStep(2)}>
                 Back
               </button>
-              <button className="btn btn-primary" onClick={handleBooking}>
-                Confirm Booking
+              <button
+                className="btn btn-primary"
+                onClick={handleBooking}
+                disabled={submitting}
+              >
+                {submitting ? "Booking..." : "Confirm Booking"}
               </button>
             </div>
           </div>
@@ -310,13 +487,13 @@ const PackageBuilder = () => {
               <div className="confirmation-actions">
                 <button
                   className="btn btn-primary"
-                  onClick={() => (window.location.href = "/bookings")}
+                  onClick={() => navigate("/bookings")}
                 >
                   View My Bookings
                 </button>
                 <button
                   className="btn btn-secondary"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={() => navigate("/")}
                 >
                   Back to Home
                 </button>

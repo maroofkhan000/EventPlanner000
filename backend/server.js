@@ -36,16 +36,18 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 
 // MongoDB Connection
-mongoose
-  .connect(
-    process.env.MONGODB_URI,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then(() => console.log("MongoDB Connected Successfully"))
-  .catch((err) => console.log("MongoDB Connection Error:", err));
+// Mongoose does not retry a failed initial connection, so keep trying
+const connectDB = () => {
+  mongoose
+    .connect(process.env.MONGODB_URI)
+    .then(() => console.log("MongoDB Connected Successfully"))
+    .catch((err) => {
+      console.log("MongoDB Connection Error:", err.message);
+      console.log("Retrying MongoDB connection in 5 seconds...");
+      setTimeout(connectDB, 5000);
+    });
+};
+connectDB();
 
 // Basic route
 app.get("/", (req, res) => {

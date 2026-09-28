@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getVenues,
   getVenueById,
+  getVenueAvailability,
   createVenue,
   addVenueReview,
 } = require("../controllers/venueController");
@@ -11,6 +12,8 @@ const router = express.Router();
 router.route("/").get(getVenues).post(protect, admin, createVenue);
 
 router.route("/:id").get(getVenueById);
+
+router.route("/:id/availability").get(getVenueAvailability);
 
 router.route("/:id/reviews").post(protect, addVenueReview);
 

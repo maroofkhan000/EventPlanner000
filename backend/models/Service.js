@@ -54,6 +54,7 @@ const serviceSchema = mongoose.Schema(
       default: true,
     },
     features: [String],
+    experience: String,
   },
   {
     timestamps: true,

@@ -1,4 +1,26 @@
 const Venue = require("../models/Venue");
+const Booking = require("../models/Booking");
+
+// Start and end of the calendar day (UTC) for a YYYY-MM-DD string
+const dayRange = (dateStr) => {
+  const start = new Date(`${dateStr}T00:00:00.000Z`);
+  if (isNaN(start)) return null;
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return { start, end };
+};
+
+// True if the venue already has an active booking on that day
+const isVenueBooked = async (venueId, dateStr) => {
+  const range = dayRange(dateStr);
+  if (!range) return false;
+  const existing = await Booking.findOne({
+    venue: venueId,
+    status: { $ne: "cancelled" },
+    eventDate: { $gte: range.start, $lt: range.end },
+  });
+  return Boolean(existing);
+};
 
 // Get all venues
 const getVenues = async (req, res) => {
@@ -46,6 +68,37 @@ const getVenueById = async (req, res) => {
     }
   } catch (error) {
     console.error("Get venue error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Check if a venue is free on a given date
+const getVenueAvailability = async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date || !dayRange(date)) {
+      return res.status(400).json({ message: "A valid date is required" });
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    if (date < today) {
+      return res.json({ available: false, message: "Date is in the past" });
+    }
+
+    const venue = await Venue.findById(req.params.id);
+    if (!venue) {
+      return res.status(404).json({ message: "Venue not found" });
+    }
+
+    const booked = await isVenueBooked(venue._id, date);
+    res.json({
+      available: !booked,
+      message: booked
+        ? "Venue is already booked on this date"
+        : "Venue is available on this date",
+    });
+  } catch (error) {
+    console.error("Venue availability error:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -104,6 +157,8 @@ const addVenueReview = async (req, res) => {
 module.exports = {
   getVenues,
   getVenueById,
+  getVenueAvailability,
   createVenue,
   addVenueReview,
+  isVenueBooked,
 };

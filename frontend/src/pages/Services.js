@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 const Services = () => {
@@ -36,13 +37,13 @@ const Services = () => {
       photography:
         "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
       videography:
-        "https://images.unsplash.com/photo-1573152952140-248e023f5c86?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
       decoration:
-        "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "https://images.unsplash.com/photo-1457089328109-e5d9bd499191?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
       music:
         "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
       mehndi:
-        "https://images.unsplash.com/photo-1603538520133-deb6c3d0f0c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
     };
 
     return (
@@ -57,7 +58,8 @@ const Services = () => {
     { value: "photography", label: "Photography", icon: "fa-camera" },
     { value: "videography", label: "Videography", icon: "fa-video" },
     { value: "decoration", label: "Decoration", icon: "fa-ring" },
-    { value: "music", label: "Music & Entertainment", icon: "fa-music" },
+    { value: "music", label: "DJ & Music", icon: "fa-music" },
+    { value: "mehndi", label: "Mehndi Artists", icon: "fa-hand-sparkles" },
   ];
 
   return (
@@ -131,6 +133,7 @@ const Services = () => {
                       alt={service.name}
                       className="service-img"
                       onError={(e) => {
+                        e.target.onerror = null;
                         e.target.src =
                           "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80";
                       }}
@@ -179,6 +182,20 @@ const Services = () => {
                         <span>{service.rating || "4.5"}/5</span>
                       </div>
                     </div>
+
+                    {service.experience && (
+                      <p className="service-experience">
+                        <i className="fas fa-award"></i> {service.experience}{" "}
+                        experience
+                      </p>
+                    )}
+
+                    <Link
+                      to={`/package-builder?service=${service._id}`}
+                      className="add-to-package-btn"
+                    >
+                      <i className="fas fa-plus"></i> Add to Package
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -498,6 +515,34 @@ const Services = () => {
 
         .service-rating i {
           color: #ffd700;
+        }
+
+        .service-experience {
+          margin: 12px 0 0;
+          color: #666;
+          font-size: 0.9rem;
+        }
+
+        .service-experience i {
+          color: #d4af37;
+          margin-right: 4px;
+        }
+
+        .add-to-package-btn {
+          display: block;
+          margin-top: 18px;
+          padding: 12px;
+          text-align: center;
+          background: #d4af37;
+          color: #fff;
+          border-radius: 12px;
+          text-decoration: none;
+          font-weight: 600;
+          transition: background 0.3s ease;
+        }
+
+        .add-to-package-btn:hover {
+          background: #b8941f;
         }
 
         /* No Results */
