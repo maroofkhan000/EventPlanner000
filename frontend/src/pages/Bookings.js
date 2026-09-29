@@ -273,11 +273,6 @@ const Bookings = () => {
           );
         }
 
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 20px;
-        }
 
         /* Header Section */
         .page-header-section {

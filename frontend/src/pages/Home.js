@@ -2,6 +2,41 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+const homeServices = [
+  {
+    category: "catering",
+    title: "Catering Services",
+    description: "Delicious food from top chefs",
+    icon: "fa-utensils",
+    image:
+      "https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+  },
+  {
+    category: "makeup",
+    title: "Makeup Artists",
+    description: "Professional bridal makeup",
+    icon: "fa-palette",
+    image:
+      "https://images.unsplash.com/photo-1596464716127-f2a82984de30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+  },
+  {
+    category: "photography",
+    title: "Photography",
+    description: "Capture special moments",
+    icon: "fa-camera",
+    image:
+      "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+  },
+  {
+    category: "videography",
+    title: "Videography",
+    description: "Professional wedding films",
+    icon: "fa-video",
+    image:
+      "https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+  },
+];
+
 const Home = () => {
   const [featuredVenues, setFeaturedVenues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +44,7 @@ const Home = () => {
   useEffect(() => {
     const fetchFeaturedVenues = async () => {
       try {
-        const response = await axios.get("/venues?limit=3");
+        const response = await axios.get("/venues?limit=9");
         setFeaturedVenues(response.data.venues);
       } catch (error) {
         console.error("Error fetching venues:", error);
@@ -88,37 +123,27 @@ const Home = () => {
         <div className="container">
           <h2>Our Services</h2>
           <div className="services-grid">
-            <div className="service-card">
-              <div className="service-icon">
-                <i className="fas fa-utensils"></i>
-              </div>
-              <h3>Catering Services</h3>
-              <p>Delicious food from top chefs</p>
-            </div>
-
-            <div className="service-card">
-              <div className="service-icon">
-                <i className="fas fa-palette"></i>
-              </div>
-              <h3>Makeup Artists</h3>
-              <p>Professional bridal makeup</p>
-            </div>
-
-            <div className="service-card">
-              <div className="service-icon">
-                <i className="fas fa-camera"></i>
-              </div>
-              <h3>Photography</h3>
-              <p>Capture special moments</p>
-            </div>
-
-            <div className="service-card">
-              <div className="service-icon">
-                <i className="fas fa-video"></i>
-              </div>
-              <h3>Videography</h3>
-              <p>Professional wedding films</p>
-            </div>
+            {homeServices.map((service) => (
+              <Link
+                key={service.category}
+                to={`/services?category=${service.category}`}
+                className="home-service-card"
+              >
+                <div className="home-service-img">
+                  <img src={service.image} alt={service.title} loading="lazy" />
+                  <div className="service-icon">
+                    <i className={`fas ${service.icon}`}></i>
+                  </div>
+                </div>
+                <div className="home-service-body">
+                  <h3>{service.title}</h3>
+                  <p>{service.description}</p>
+                  <span className="home-service-link">
+                    Explore <i className="fas fa-arrow-right"></i>
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

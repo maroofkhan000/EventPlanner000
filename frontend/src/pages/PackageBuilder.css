@@ -179,7 +179,7 @@
   padding: 15px 25px;
   margin-bottom: 25px;
   position: sticky;
-  top: 80px;
+  top: calc(var(--header-h) + 12px);
   z-index: 5;
 }
 

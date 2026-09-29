@@ -10,6 +10,10 @@
   --text: #444;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  --line: #ececec;
+  --muted: #777;
+  --mainbar-h: 68px;
+  --header-h: var(--mainbar-h);
 }
 
 * {
@@ -27,9 +31,9 @@ body {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 clamp(16px, 3vw, 40px);
 }
 
 .btn {

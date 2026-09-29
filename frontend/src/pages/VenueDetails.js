@@ -148,24 +148,17 @@ const VenueDetails = () => {
         style={{
           background: "linear-gradient(135deg, #d4af37 0%, #b8941f 100%)",
           color: "#fff",
-          padding: "100px 0 50px",
+          padding: "18px 0 16px",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1200px",
-            margin: "0 auto",
-            padding: "0 20px",
-          }}
-        >
+        <div className="container">
           <nav
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-              marginBottom: "20px",
-              fontSize: "0.9rem",
+              gap: "8px",
+              marginBottom: "6px",
+              fontSize: "0.78rem",
             }}
           >
             <Link
@@ -187,85 +180,23 @@ const VenueDetails = () => {
 
           <h1
             style={{
-              fontSize: "3rem",
-              marginBottom: "15px",
+              fontSize: "clamp(1.3rem, 2.2vw, 1.6rem)",
+              lineHeight: 1.2,
+              margin: 0,
               fontWeight: "700",
-              textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+              textShadow: "0 1px 3px rgba(0,0,0,0.25)",
             }}
           >
             {venue.name}
           </h1>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "20px",
-              flexWrap: "wrap",
-              marginBottom: "20px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <i
-                className="fas fa-map-marker-alt"
-                style={{ fontSize: "1.1rem" }}
-              ></i>
-              <span style={{ fontSize: "1.1rem" }}>
-                {venue.location?.address}, {venue.location?.city},{" "}
-                {venue.location?.state}
-              </span>
-            </div>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.2)",
-                padding: "4px 12px",
-                borderRadius: "15px",
-                fontSize: "0.9rem",
-                textTransform: "capitalize",
-              }}
-            >
-              {venue.type?.replace("-", " ")}
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "15px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <i className="fas fa-star" style={{ color: "#ffd700" }}></i>
-              <span style={{ fontSize: "1.1rem", fontWeight: "600" }}>
-                {venue.rating}/5
-              </span>
-            </div>
-            <div
-              style={{
-                fontSize: "2rem",
-                fontWeight: "700",
-                background: "linear-gradient(45deg, #fff, #ffeb3b)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              ₹{venue.price?.toLocaleString()}
-            </div>
-            <span style={{ opacity: 0.9 }}>Starting Price</span>
-          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div
-        style={{
-          width: "100%",
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "50px 20px",
-        }}
+        className="container"
+        style={{ paddingTop: "32px", paddingBottom: "50px" }}
       >
         <div
           className="main-content"
@@ -379,7 +310,7 @@ const VenueDetails = () => {
                   color: "#666",
                   lineHeight: "1.7",
                   fontSize: "1.05rem",
-                  marginBottom: "30px",
+                  marginBottom: "20px",
                 }}
               >
                 {venue.description}
@@ -387,11 +318,55 @@ const VenueDetails = () => {
 
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "20px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                  color: "#444",
+                  fontSize: "1rem",
+                  marginBottom: "25px",
                 }}
               >
+                <i
+                  className="fas fa-map-marker-alt"
+                  style={{ color: "#d4af37", marginTop: "4px" }}
+                ></i>
+                <span>
+                  {venue.location?.address}, {venue.location?.city},{" "}
+                  {venue.location?.state}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                  gap: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "20px",
+                    background: "#f8f0e3",
+                    borderRadius: "12px",
+                  }}
+                >
+                  <i
+                    className="fas fa-tag"
+                    style={{
+                      fontSize: "2rem",
+                      color: "#d4af37",
+                      marginBottom: "10px",
+                    }}
+                  ></i>
+                  <h4 style={{ margin: "0 0 5px 0", color: "#333" }}>
+                    Starting Price
+                  </h4>
+                  <p style={{ margin: 0, color: "#666", fontWeight: "600" }}>
+                    ₹{venue.price?.toLocaleString()}
+                  </p>
+                </div>
+
                 <div
                   style={{
                     textAlign: "center",
