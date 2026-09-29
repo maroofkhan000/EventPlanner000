@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import Venues from "./pages/Venues";
 import Services from "./pages/Services";
 import Destination from "./pages/Destination";
+import About from "./pages/About";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
@@ -38,6 +39,8 @@ function App() {
               <Route path="/venues/:id" element={<VenueDetails />} />
               <Route path="/services" element={<Services />} />
               <Route path="/destination" element={<Destination />} />
+              <Route path="/contact" element={<Destination />} />
+              <Route path="/about" element={<About />} />
               <Route path="/package-builder" element={<PackageBuilder />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

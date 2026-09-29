@@ -146,8 +146,11 @@ const Header = () => {
             )}
           </div>
 
-          <NavLink to="/destination" className="nav-link">
-            Destinations
+          <NavLink to="/about" className="nav-link">
+            About Us
+          </NavLink>
+          <NavLink to="/contact" className="nav-link">
+            Contact
           </NavLink>
           <NavLink to="/package-builder" className="nav-link">
             Package Builder
@@ -277,8 +280,11 @@ const Header = () => {
             </div>
           )}
 
-          <Link to="/destination" className="mobile-link">
-            Destinations
+          <Link to="/about" className="mobile-link">
+            About Us
+          </Link>
+          <Link to="/contact" className="mobile-link">
+            Contact
           </Link>
           <Link to="/package-builder" className="mobile-link">
             Package Builder

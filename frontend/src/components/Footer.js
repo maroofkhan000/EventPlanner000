@@ -42,7 +42,10 @@ const Footer = () => {
                 <Link to="/services">Services</Link>
               </li>
               <li>
-                <Link to="/destination">Destinations</Link>
+                <Link to="/about">About Us</Link>
+              </li>
+              <li>
+                <Link to="/contact">Contact</Link>
               </li>
               <li>
                 <Link to="/package-builder">Package Builder</Link>
@@ -60,7 +63,7 @@ const Footer = () => {
                 <Link to="/services">Hotel Weddings</Link>
               </li>
               <li>
-                <Link to="/destination">Destination Weddings</Link>
+                <Link to="/venues?type=destination">Destination Weddings</Link>
               </li>
               <li>
                 <Link to="/services">Makeup Artists</Link>
