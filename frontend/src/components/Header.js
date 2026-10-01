@@ -200,6 +200,11 @@ const Header = () => {
                     <Link to="/bookings">
                       <i className="fas fa-calendar-check"></i>My bookings
                     </Link>
+                    {user.role === "admin" && (
+                      <Link to="/admin/venues">
+                        <i className="fas fa-plus-circle"></i>Add venue
+                      </Link>
+                    )}
                     <button type="button" onClick={handleLogout}>
                       <i className="fas fa-sign-out-alt"></i>Log out
                     </button>
@@ -299,6 +304,11 @@ const Header = () => {
                 <Link to="/bookings" className="mobile-link">
                   My bookings
                 </Link>
+                {user.role === "admin" && (
+                  <Link to="/admin/venues" className="mobile-link">
+                    Add venue
+                  </Link>
+                )}
                 <button type="button" className="login-link" onClick={handleLogout}>
                   Log out
                 </button>

@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Bookings from "./pages/Bookings";
 import PackageBuilder from "./pages/PackageBuilder";
 import VenueDetails from "./pages/VenueDetails";
+import AdminVenues from "./pages/AdminVenues";
 
 // Context
 import { AuthProvider } from "./context/AuthContext";
@@ -46,6 +47,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/bookings" element={<Bookings />} />
+              <Route path="/admin/venues" element={<AdminVenues />} />
             </Routes>
           </main>
           <Footer />

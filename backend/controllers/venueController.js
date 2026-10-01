@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const Venue = require("../models/Venue");
 const Booking = require("../models/Booking");
 
@@ -61,7 +63,7 @@ const getVenueById = async (req, res) => {
   try {
     const venue = await Venue.findById(req.params.id);
 
-    if (venue) {
+    if (venue && venue.isActive) {
       res.json(venue);
     } else {
       res.status(404).json({ message: "Venue not found" });
@@ -115,6 +117,55 @@ const createVenue = async (req, res) => {
   }
 };
 
+// Upload venue photos, returns their public URLs
+const uploadVenueImages = (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: "No images uploaded" });
+  }
+  const base = `${req.protocol}://${req.get("host")}`;
+  const urls = req.files.map((f) => `${base}/uploads/venues/${f.filename}`);
+  res.status(201).json({ urls });
+};
+
+// Delete venue. Venues with bookings are hidden instead, so those
+// bookings keep their venue details; others are removed with their photos.
+const deleteVenue = async (req, res) => {
+  try {
+    const venue = await Venue.findById(req.params.id);
+    if (!venue || !venue.isActive) {
+      return res.status(404).json({ message: "Venue not found" });
+    }
+
+    const hasBookings = await Booking.exists({
+      venue: venue._id,
+      status: { $ne: "cancelled" },
+    });
+
+    if (hasBookings) {
+      venue.isActive = false;
+      await venue.save();
+      return res.json({
+        message: `${venue.name} was removed from listings (kept for its existing bookings)`,
+      });
+    }
+
+    await venue.deleteOne();
+
+    // Remove photos that were uploaded to this server
+    venue.images
+      .map((url) => url.match(/\/uploads\/venues\/([\w.-]+)$/))
+      .filter(Boolean)
+      .forEach(([, file]) => {
+        fs.unlink(path.join(__dirname, "..", "uploads", "venues", file), () => {});
+      });
+
+    res.json({ message: `${venue.name} was deleted` });
+  } catch (error) {
+    console.error("Delete venue error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // Add review
 const addVenueReview = async (req, res) => {
   try {
@@ -159,6 +210,8 @@ module.exports = {
   getVenueById,
   getVenueAvailability,
   createVenue,
+  uploadVenueImages,
+  deleteVenue,
   addVenueReview,
   isVenueBooked,
 };
