@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import UpiPayment from "../components/UpiPayment";
 
 const Bookings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [payingId, setPayingId] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -58,6 +60,8 @@ const Bookings = () => {
         return "fas fa-check-circle";
       case "pending":
         return "fas fa-clock";
+      case "verifying":
+        return "fas fa-hourglass-half";
       case "failed":
         return "fas fa-exclamation-circle";
       default:
@@ -230,8 +234,50 @@ const Bookings = () => {
                   </div>
                 )}
 
-                {/* Booking Actions - Only Download Invoice button remains */}
+                {booking.paymentStatus === "verifying" && (
+                  <p className="payment-note">
+                    <i className="fas fa-hourglass-half"></i>
+                    Payment submitted (UPI ref {booking.paymentReference}). We'll
+                    confirm your booking once it's verified.
+                  </p>
+                )}
+
+                {payingId === booking._id && (
+                  <div className="pay-panel">
+                    <UpiPayment
+                      bookingId={booking._id}
+                      onSubmitted={(updated) => {
+                        setPayingId(null);
+                        setBookings((prev) =>
+                          prev.map((b) =>
+                            b._id === updated._id
+                              ? {
+                                  ...b,
+                                  paymentStatus: updated.paymentStatus,
+                                  paymentReference: updated.paymentReference,
+                                }
+                              : b
+                          )
+                        );
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Booking Actions */}
                 <div className="booking-actions">
+                  {booking.paymentStatus === "pending" &&
+                    booking.status !== "cancelled" && (
+                      <button
+                        className="action-btn primary"
+                        onClick={() =>
+                          setPayingId(payingId === booking._id ? null : booking._id)
+                        }
+                      >
+                        <i className="fas fa-rupee-sign"></i>
+                        {payingId === booking._id ? "Hide payment" : "Pay now"}
+                      </button>
+                    )}
                   {booking.status === "confirmed" && (
                     <button className="action-btn secondary">
                       <i className="fas fa-download"></i>
@@ -467,6 +513,30 @@ const Bookings = () => {
           color: #dc3545;
         }
 
+        .payment-status.verifying {
+          color: #17a2b8;
+        }
+
+        .payment-note {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0 0 16px;
+          padding: 12px 14px;
+          border-radius: 10px;
+          background: #e8f6f8;
+          color: #117a8b;
+          font-size: 0.9rem;
+        }
+
+        .pay-panel {
+          margin: 0 0 16px;
+          padding: 20px;
+          border-radius: 14px;
+          background: #fff;
+          border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
         /* Sections */
         .section-header {
           display: flex;
@@ -587,6 +657,16 @@ const Bookings = () => {
 
         .action-btn.secondary:hover {
           background: #5a6268;
+          transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+          background: #d4af37;
+          color: white;
+        }
+
+        .action-btn.primary:hover {
+          background: #b8941f;
           transform: translateY(-2px);
         }
 

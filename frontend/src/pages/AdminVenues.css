@@ -480,3 +480,41 @@
     width: 100%;
   }
 }
+
+/* Payments to verify */
+.admin-payments {
+  margin-bottom: 28px;
+  border-color: rgba(23, 162, 184, 0.4);
+}
+
+.payment-amount {
+  color: #b8941f;
+  font-size: 1.1rem;
+}
+
+.payment-row .manage-info span {
+  text-transform: none;
+}
+
+.btn-approve {
+  padding: 7px 15px;
+  border: 2px solid #28a745;
+  border-radius: 21px;
+  background: #28a745;
+  color: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-approve:hover {
+  background: #218838;
+  border-color: #218838;
+}
+
+.btn-approve:disabled,
+.payment-row .btn-delete:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

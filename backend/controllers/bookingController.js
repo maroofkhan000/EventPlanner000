@@ -126,8 +126,162 @@ const getBookingById = async (req, res) => {
   }
 };
 
+// Loads a booking the current user owns, or sends the error response
+const findOwnBooking = async (req, res) => {
+  const booking = await Booking.findById(req.params.id).populate("venue", "name");
+  if (!booking) {
+    res.status(404).json({ message: "Booking not found" });
+    return null;
+  }
+  if (booking.user.toString() !== req.user._id.toString()) {
+    res.status(403).json({ message: "Not authorized for this booking" });
+    return null;
+  }
+  return booking;
+};
+
+// UPI payment details for a booking: the amount always comes from the database
+const getUpiPayment = async (req, res) => {
+  try {
+    const { UPI_ID, UPI_PAYEE_NAME = "Blissful Weddings" } = process.env;
+    if (!UPI_ID) {
+      return res
+        .status(503)
+        .json({ message: "UPI payments are not set up yet. Please try later." });
+    }
+
+    const booking = await findOwnBooking(req, res);
+    if (!booking) return;
+
+    const amount = booking.totalAmount.toFixed(2);
+    const ref = booking._id.toString().slice(-8).toUpperCase();
+    const note = `Booking ${ref}`;
+    const query = new URLSearchParams({
+      pa: UPI_ID,
+      pn: UPI_PAYEE_NAME,
+      am: amount,
+      cu: "INR",
+      tn: note,
+    }).toString();
+
+    res.json({
+      upiId: UPI_ID,
+      payeeName: UPI_PAYEE_NAME,
+      amount: booking.totalAmount,
+      reference: ref,
+      paymentStatus: booking.paymentStatus,
+      query,
+      link: `upi://pay?${query}`,
+    });
+  } catch (error) {
+    console.error("UPI payment error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Customer submits the UPI reference (UTR) after paying
+const submitPaymentReference = async (req, res) => {
+  try {
+    const reference = String(req.body.reference || "").replace(/\s/g, "");
+    if (!/^\d{12}$/.test(reference)) {
+      return res.status(400).json({
+        message: "Enter the 12-digit UPI reference / UTR number from your payment app",
+      });
+    }
+
+    const booking = await findOwnBooking(req, res);
+    if (!booking) return;
+
+    if (booking.status === "cancelled") {
+      return res.status(400).json({ message: "This booking was cancelled" });
+    }
+    if (booking.paymentStatus === "paid") {
+      return res.status(400).json({ message: "This booking is already paid" });
+    }
+
+    const used = await Booking.exists({
+      _id: { $ne: booking._id },
+      paymentReference: reference,
+    });
+    if (used) {
+      return res
+        .status(409)
+        .json({ message: "This reference number was already used for another booking" });
+    }
+
+    booking.paymentReference = reference;
+    booking.paymentSubmittedAt = new Date();
+    booking.paymentStatus = "verifying";
+    await booking.save();
+
+    res.json({ message: "Payment submitted. We'll confirm it shortly.", booking });
+  } catch (error) {
+    console.error("Submit payment error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Admin: bookings waiting for payment approval (or any payment status)
+const getPaymentsForReview = async (req, res) => {
+  try {
+    const status = req.query.status || "verifying";
+    const bookings = await Booking.find({ paymentStatus: status })
+      .populate("venue", "name location")
+      .populate("user", "name email phone")
+      .sort({ paymentSubmittedAt: -1, createdAt: -1 })
+      .limit(200);
+    res.json(bookings);
+  } catch (error) {
+    console.error("Get payments error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Admin: approve or reject a submitted UPI payment
+const reviewPayment = async (req, res) => {
+  try {
+    const { action } = req.body;
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({ message: "Action must be approve or reject" });
+    }
+
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    if (booking.paymentStatus !== "verifying") {
+      return res
+        .status(400)
+        .json({ message: "This booking has no payment waiting for review" });
+    }
+
+    if (action === "approve") {
+      booking.paymentStatus = "paid";
+      booking.status = "confirmed";
+    } else {
+      // Customer can pay again / re-enter the reference
+      booking.paymentStatus = "pending";
+      booking.paymentReference = undefined;
+      booking.paymentSubmittedAt = undefined;
+    }
+    await booking.save();
+
+    res.json({
+      message: action === "approve" ? "Payment approved" : "Payment rejected",
+      booking,
+    });
+  } catch (error) {
+    console.error("Review payment error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
   getBookingById,
+  getUpiPayment,
+  submitPaymentReference,
+  getPaymentsForReview,
+  reviewPayment,
 };

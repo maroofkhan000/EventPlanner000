@@ -45,9 +45,15 @@ const bookingSchema = mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "verifying", "paid", "failed", "refunded"],
       default: "pending",
     },
+    // UPI transaction reference (UTR) the customer enters after paying
+    paymentReference: {
+      type: String,
+      trim: true,
+    },
+    paymentSubmittedAt: Date,
     specialRequests: String,
   },
   {

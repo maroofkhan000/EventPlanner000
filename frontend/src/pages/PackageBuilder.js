@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
+import UpiPayment from "../components/UpiPayment";
 import "./PackageBuilder.css";
 
 const FALLBACK_IMAGE =
@@ -26,6 +27,8 @@ const PackageBuilder = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
+  const [bookingId, setBookingId] = useState(null);
+  const [paymentSent, setPaymentSent] = useState(false);
   const [venues, setVenues] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,14 +142,15 @@ const PackageBuilder = () => {
         return;
       }
 
-      await axios.post("/bookings", {
+      const { data: booking } = await axios.post("/bookings", {
         venue: selectedVenue._id,
         services: chosenServices.map((s) => ({ service: s._id })),
         eventDate,
         guestCount: Number(guestCount),
         specialRequests,
       });
-      toast.success("Booking created successfully!");
+      toast.success("Booking created! Complete the payment to confirm it.");
+      setBookingId(booking._id);
       setStep(4);
     } catch (error) {
       toast.error(error.response?.data?.message || "Booking failed");
@@ -479,11 +483,29 @@ const PackageBuilder = () => {
           <div className="builder-step confirmation">
             <div className="confirmation-content">
               <i className="fas fa-check-circle"></i>
-              <h2>Booking Confirmed!</h2>
-              <p>
-                Your wedding package has been successfully booked. We'll contact
-                you shortly to confirm the details.
-              </p>
+              {paymentSent ? (
+                <>
+                  <h2>Payment Submitted!</h2>
+                  <p>
+                    Thank you! We'll verify your payment and confirm your booking
+                    shortly. You can track it in My Bookings.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2>Booking Created!</h2>
+                  <p>
+                    Your date is held. Pay through UPI below to confirm your
+                    booking.
+                  </p>
+                  {bookingId && (
+                    <UpiPayment
+                      bookingId={bookingId}
+                      onSubmitted={() => setPaymentSent(true)}
+                    />
+                  )}
+                </>
+              )}
               <div className="confirmation-actions">
                 <button
                   className="btn btn-primary"
