@@ -20,6 +20,7 @@ import Bookings from "./pages/Bookings";
 import PackageBuilder from "./pages/PackageBuilder";
 import VenueDetails from "./pages/VenueDetails";
 import AdminVenues from "./pages/AdminVenues";
+import AdminBookings from "./pages/AdminBookings";
 
 // Context
 import { AuthProvider } from "./context/AuthContext";
@@ -48,6 +49,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/bookings" element={<Bookings />} />
               <Route path="/admin/venues" element={<AdminVenues />} />
+              <Route path="/admin/bookings" element={<AdminBookings />} />
             </Routes>
           </main>
           <Footer />

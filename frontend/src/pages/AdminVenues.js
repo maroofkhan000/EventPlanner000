@@ -37,8 +37,6 @@ const AdminVenues = () => {
   const [search, setSearch] = useState("");
   const [confirmId, setConfirmId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [payments, setPayments] = useState([]);
-  const [reviewingId, setReviewingId] = useState(null);
   const isAdmin = user?.role === "admin";
 
   // Free object URLs made for local file previews when leaving the page
@@ -53,10 +51,6 @@ const AdminVenues = () => {
       .then((res) => setVenues(res.data.venues))
       .catch(() => toast.error("Could not load venues"))
       .finally(() => setVenuesLoading(false));
-    axios
-      .get("/bookings/admin/payments")
-      .then((res) => setPayments(res.data))
-      .catch(() => toast.error("Could not load payments"));
   }, [isAdmin]);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -189,19 +183,6 @@ const AdminVenues = () => {
     }
   };
 
-  const reviewPayment = async (booking, action) => {
-    setReviewingId(booking._id);
-    try {
-      const res = await axios.put(`/bookings/${booking._id}/payment`, { action });
-      toast.success(res.data.message);
-      setPayments((prev) => prev.filter((b) => b._id !== booking._id));
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Could not update the payment");
-    } finally {
-      setReviewingId(null);
-    }
-  };
-
   const term = search.trim().toLowerCase();
   const shownVenues = term
     ? venues.filter((v) =>
@@ -226,53 +207,6 @@ const AdminVenues = () => {
             View all venues
           </Link>
         </div>
-
-        {payments.length > 0 && (
-          <section className="admin-section admin-payments">
-            <h3>Payments to verify ({payments.length})</h3>
-            <p className="admin-hint">
-              Check that each UPI reference number and amount appears in your bank or
-              UPI app before approving. Approving confirms the booking.
-            </p>
-            <ul className="manage-list">
-              {payments.map((b) => (
-                <li key={b._id} className="manage-row payment-row">
-                  <div className="manage-info">
-                    <strong className="payment-amount">
-                      ₹{b.totalAmount?.toLocaleString("en-IN")}
-                    </strong>
-                    <span>
-                      UPI ref <b>{b.paymentReference}</b> · Booking{" "}
-                      {b._id.slice(-8).toUpperCase()}
-                    </span>
-                    <span>
-                      {b.user?.name} ({b.user?.email}) · {b.venue?.name || "Venue removed"} ·{" "}
-                      {new Date(b.eventDate).toLocaleDateString("en-IN")}
-                    </span>
-                  </div>
-                  <div className="manage-confirm">
-                    <button
-                      type="button"
-                      className="btn-approve"
-                      disabled={reviewingId === b._id}
-                      onClick={() => reviewPayment(b, "approve")}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-delete"
-                      disabled={reviewingId === b._id}
-                      onClick={() => reviewPayment(b, "reject")}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         <div className="admin-layout">
           <form className="admin-form" onSubmit={handleSubmit}>

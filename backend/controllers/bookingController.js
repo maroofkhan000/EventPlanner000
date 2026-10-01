@@ -221,18 +221,62 @@ const submitPaymentReference = async (req, res) => {
   }
 };
 
-// Admin: bookings waiting for payment approval (or any payment status)
-const getPaymentsForReview = async (req, res) => {
+// Admin: every booking, newest first (the page groups them by status)
+const getAllBookings = async (req, res) => {
   try {
-    const status = req.query.status || "verifying";
-    const bookings = await Booking.find({ paymentStatus: status })
+    const bookings = await Booking.find({})
       .populate("venue", "name location")
       .populate("user", "name email phone")
-      .sort({ paymentSubmittedAt: -1, createdAt: -1 })
-      .limit(200);
+      .sort({ createdAt: -1 })
+      .limit(1000);
     res.json(bookings);
   } catch (error) {
-    console.error("Get payments error:", error);
+    console.error("Get all bookings error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Admin: cancel a booking. This frees the venue's date again.
+const cancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    if (booking.status === "cancelled") {
+      return res.status(400).json({ message: "This booking is already cancelled" });
+    }
+
+    booking.status = "cancelled";
+    // A payment still waiting for review is dropped; a paid one stays "paid"
+    // so the admin can see a refund is due
+    if (booking.paymentStatus === "verifying") booking.paymentStatus = "pending";
+    await booking.save();
+
+    res.json({ message: "Booking cancelled", booking });
+  } catch (error) {
+    console.error("Cancel booking error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Admin: permanently delete a booking. Only cancelled bookings can be deleted.
+const deleteBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    if (booking.status !== "cancelled") {
+      return res
+        .status(400)
+        .json({ message: "Cancel the booking before deleting it" });
+    }
+
+    await booking.deleteOne();
+    res.json({ message: "Booking deleted" });
+  } catch (error) {
+    console.error("Delete booking error:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -248,6 +292,9 @@ const reviewPayment = async (req, res) => {
     const booking = await Booking.findById(req.params.id);
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
+    }
+    if (booking.status === "cancelled") {
+      return res.status(400).json({ message: "This booking was cancelled" });
     }
     if (booking.paymentStatus !== "verifying") {
       return res
@@ -282,6 +329,8 @@ module.exports = {
   getBookingById,
   getUpiPayment,
   submitPaymentReference,
-  getPaymentsForReview,
+  getAllBookings,
+  cancelBooking,
+  deleteBooking,
   reviewPayment,
 };

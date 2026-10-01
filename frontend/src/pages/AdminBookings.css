@@ -1,0 +1,139 @@
+/* Master account: bookings grouped into tabs */
+.booking-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.booking-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 2px solid #e6d7a8;
+  border-radius: 24px;
+  background: #fff;
+  color: #555;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.booking-tab:hover {
+  border-color: #d4af37;
+  color: #b8941f;
+}
+
+.booking-tab.is-active {
+  border-color: #d4af37;
+  background: #d4af37;
+  color: #fff;
+}
+
+.tab-count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.booking-tab.is-active .tab-count {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.booking-row {
+  align-items: flex-start;
+}
+
+.booking-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.booking-main i {
+  width: 14px;
+  color: #d4af37;
+  font-size: 0.78rem;
+}
+
+.booking-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.booking-title strong {
+  color: #333;
+  font-size: 1rem;
+}
+
+.booking-ref {
+  color: #999;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.pay-badge {
+  padding: 1px 9px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.pay-pending {
+  background: #fff4d6;
+  color: #a07800;
+}
+
+.pay-verifying {
+  background: #e3f4f7;
+  color: #117a8b;
+}
+
+.pay-paid {
+  background: #e3f5e8;
+  color: #1e7e34;
+}
+
+.pay-failed,
+.pay-refunded {
+  background: #fbe5e3;
+  color: #a93226;
+}
+
+.refund-note {
+  color: #a93226;
+  font-weight: 600;
+}
+
+.refund-note i {
+  color: #a93226;
+}
+
+.booking-empty {
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .booking-tab {
+    padding: 7px 13px;
+    font-size: 0.8rem;
+  }
+
+  .booking-row .manage-confirm {
+    justify-content: flex-start;
+  }
+}
