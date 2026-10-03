@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { todayIST } from "../utils/dates";
 import { toast } from "react-toastify";
 
 const VenueDetails = () => {
@@ -12,7 +13,7 @@ const VenueDetails = () => {
   // null = not checked yet, otherwise { available, message }
   const [availability, setAvailability] = useState(null);
   const [checking, setChecking] = useState(false);
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayIST();
 
   useEffect(() => {
     fetchVenueDetails();

@@ -6,32 +6,47 @@ import { useAuth } from "../context/AuthContext";
 import PhotoPicker, { usePhotos } from "../components/PhotoPicker";
 import "./Venues.css";
 import "./AdminVenues.css";
+import "./AdminVendors.css";
+
+const categories = [
+  { value: "photography", label: "Photography" },
+  { value: "videography", label: "Videography" },
+  { value: "makeup", label: "Bridal Makeup" },
+  { value: "mehndi", label: "Mehndi" },
+  { value: "catering", label: "Catering" },
+  { value: "decoration", label: "Decoration" },
+  { value: "music", label: "DJ & Music" },
+];
 
 const emptyForm = {
   name: "",
-  type: "banquet-hall",
-  address: "",
+  category: "photography",
+  providerName: "",
+  price: "",
   city: "",
   state: "",
-  capacityMin: "",
-  capacityMax: "",
-  price: "",
-  amenities: "",
+  experience: "",
+  features: "",
   description: "",
 };
 
 const placeholderImage =
   "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80";
 
-const AdminVenues = () => {
+const splitList = (text) =>
+  text
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+const AdminVendors = () => {
   const { user } = useAuth();
   const [form, setForm] = useState(emptyForm);
   const photoState = usePhotos();
   const { photos } = photoState;
   const [saving, setSaving] = useState(false);
-  const [created, setCreated] = useState([]);
-  const [venues, setVenues] = useState([]);
-  const [venuesLoading, setVenuesLoading] = useState(true);
+  const [vendors, setVendors] = useState([]);
+  const [vendorsLoading, setVendorsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [confirmId, setConfirmId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -40,10 +55,10 @@ const AdminVenues = () => {
   useEffect(() => {
     if (!isAdmin) return;
     axios
-      .get("/venues?limit=1000")
-      .then((res) => setVenues(res.data.venues))
-      .catch(() => toast.error("Could not load venues"))
-      .finally(() => setVenuesLoading(false));
+      .get("/services?limit=1000")
+      .then((res) => setVendors(res.data.services))
+      .catch(() => toast.error("Could not load vendors"))
+      .finally(() => setVendorsLoading(false));
   }, [isAdmin]);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -53,7 +68,7 @@ const AdminVenues = () => {
         <div className="container admin-denied">
           <i className="fas fa-lock"></i>
           <h2>Master account only</h2>
-          <p>Log in with the master account to add venues.</p>
+          <p>Log in with the master account to add vendors.</p>
         </div>
       </div>
     );
@@ -64,12 +79,6 @@ const AdminVenues = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const min = Number(form.capacityMin);
-    const max = Number(form.capacityMax);
-    if (min > max) {
-      toast.error("Minimum guests can't be more than maximum guests");
-      return;
-    }
     if (photos.length === 0) {
       toast.error("Add at least one photo");
       return;
@@ -77,63 +86,60 @@ const AdminVenues = () => {
 
     setSaving(true);
     try {
-      const images = await photoState.uploadAll("/venues/upload");
+      const images = await photoState.uploadAll("/services/upload");
+      const experience = form.experience.trim();
 
-      const res = await axios.post("/venues", {
+      const res = await axios.post("/services", {
         name: form.name.trim(),
-        type: form.type,
-        location: {
-          address: form.address.trim(),
-          city: form.city.trim(),
-          state: form.state.trim(),
-        },
-        capacity: { min, max },
+        category: form.category,
+        providerName: form.providerName.trim(),
         price: Number(form.price),
-        amenities: form.amenities
-          .split(",")
-          .map((a) => a.trim())
-          .filter(Boolean),
+        location: { city: form.city.trim(), state: form.state.trim() },
+        experience: /^\d+(\.\d+)?$/.test(experience) ? `${experience} years` : experience,
+        features: splitList(form.features),
         description: form.description.trim(),
         images,
       });
 
       toast.success(`${res.data.name} is now live`);
-      setCreated((prev) => [res.data, ...prev]);
-      setVenues((prev) => [res.data, ...prev]);
+      setVendors((prev) => [res.data, ...prev]);
       setForm(emptyForm);
       photoState.reset();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not save the venue");
+      toast.error(error.response?.data?.message || "Could not save the vendor");
     } finally {
       setSaving(false);
     }
   };
 
-  const deleteVenue = async (venue) => {
-    setDeletingId(venue._id);
+  const deleteVendor = async (vendor) => {
+    setDeletingId(vendor._id);
     try {
-      const res = await axios.delete(`/venues/${venue._id}`);
+      const res = await axios.delete(`/services/${vendor._id}`);
       toast.success(res.data.message);
-      setVenues((prev) => prev.filter((v) => v._id !== venue._id));
-      setCreated((prev) => prev.filter((v) => v._id !== venue._id));
+      setVendors((prev) => prev.filter((v) => v._id !== vendor._id));
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not delete the venue");
+      toast.error(error.response?.data?.message || "Could not delete the vendor");
     } finally {
       setDeletingId(null);
       setConfirmId(null);
     }
   };
 
+  const categoryLabel = (value) =>
+    categories.find((c) => c.value === value)?.label || value;
+
   const term = search.trim().toLowerCase();
-  const shownVenues = term
-    ? venues.filter((v) =>
-        [v.name, v.location?.city, v.location?.state, v.type]
+  const shownVendors = term
+    ? vendors.filter((v) =>
+        [v.name, v.providerName, categoryLabel(v.category), v.location?.city]
           .join(" ")
           .toLowerCase()
           .includes(term)
       )
-    : venues;
+    : vendors;
 
+  const features = splitList(form.features);
   const cover = photos[0]?.preview || placeholderImage;
 
   return (
@@ -142,10 +148,10 @@ const AdminVenues = () => {
         <div className="admin-head">
           <div>
             <p className="admin-eyebrow">Master account</p>
-            <h1>Add a new venue</h1>
+            <h1>Add a new vendor</h1>
           </div>
-          <Link to="/venues" className="btn-outline-gold">
-            View all venues
+          <Link to="/services" className="btn-outline-gold">
+            View all vendors
           </Link>
         </div>
 
@@ -157,28 +163,44 @@ const AdminVenues = () => {
                 Up to 10 photos (JPG, PNG, WEBP, 5 MB each). The first photo is the
                 card cover.
               </p>
-
-              <PhotoPicker photoState={photoState} label="Venue photo" />
+              <PhotoPicker photoState={photoState} label="Vendor photo" />
             </section>
 
             <section className="admin-section">
-              <h3>Venue details</h3>
+              <h3>Vendor details</h3>
               <div className="admin-grid">
                 <label className="field span-2">
-                  <span>Venue name *</span>
-                  <input name="name" value={form.name} onChange={handleChange} required />
+                  <span>Service name *</span>
+                  <input
+                    name="name"
+                    placeholder="e.g. Candid Wedding Photography"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
+                  />
                 </label>
                 <label className="field">
-                  <span>Venue type *</span>
-                  <select name="type" value={form.type} onChange={handleChange}>
-                    <option value="banquet-hall">Banquet Hall</option>
-                    <option value="marriage-lawn">Marriage Lawn</option>
-                    <option value="hotel">Luxury Hotel</option>
-                    <option value="destination">Destination</option>
+                  <span>Category *</span>
+                  <select name="category" value={form.category} onChange={handleChange}>
+                    {categories.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label className="field">
-                  <span>Starting price (₹) *</span>
+                  <span>Business / provider name *</span>
+                  <input
+                    name="providerName"
+                    placeholder="e.g. Capture Moments Studio"
+                    value={form.providerName}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>Price (₹) *</span>
                   <input
                     type="number"
                     min="0"
@@ -188,9 +210,14 @@ const AdminVenues = () => {
                     required
                   />
                 </label>
-                <label className="field span-2">
-                  <span>Address *</span>
-                  <input name="address" value={form.address} onChange={handleChange} required />
+                <label className="field">
+                  <span>Experience</span>
+                  <input
+                    name="experience"
+                    placeholder="e.g. 8 years"
+                    value={form.experience}
+                    onChange={handleChange}
+                  />
                 </label>
                 <label className="field">
                   <span>City *</span>
@@ -200,34 +227,12 @@ const AdminVenues = () => {
                   <span>State *</span>
                   <input name="state" value={form.state} onChange={handleChange} required />
                 </label>
-                <label className="field">
-                  <span>Min guests *</span>
-                  <input
-                    type="number"
-                    min="1"
-                    name="capacityMin"
-                    value={form.capacityMin}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-                <label className="field">
-                  <span>Max guests *</span>
-                  <input
-                    type="number"
-                    min="1"
-                    name="capacityMax"
-                    value={form.capacityMax}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
                 <label className="field span-2">
-                  <span>Amenities (comma separated)</span>
+                  <span>Highlights (comma separated)</span>
                   <input
-                    name="amenities"
-                    placeholder="Parking, AC, Bridal room, In-house catering"
-                    value={form.amenities}
+                    name="features"
+                    placeholder="Pre-wedding shoot, Album design, Drone shots"
+                    value={form.features}
                     onChange={handleChange}
                   />
                 </label>
@@ -236,7 +241,7 @@ const AdminVenues = () => {
                   <textarea
                     name="description"
                     rows="5"
-                    placeholder="Tell couples what makes this venue special"
+                    placeholder="Tell couples what this vendor offers"
                     value={form.description}
                     onChange={handleChange}
                   />
@@ -245,96 +250,96 @@ const AdminVenues = () => {
             </section>
 
             <button type="submit" className="btn-gold admin-submit" disabled={saving}>
-              {saving ? "Saving venue..." : "Publish venue"}
+              {saving ? "Saving vendor..." : "Publish vendor"}
             </button>
           </form>
 
           <aside className="admin-preview">
             <p className="admin-eyebrow">Card preview</p>
-            <article className="vcard">
-              <div className="vcard-img">
+            <article className="vendor-preview">
+              <div className="vendor-preview-img">
                 <img src={cover} alt="Cover preview" />
-                <span className="venue-badge">{form.type.replace("-", " ")}</span>
+                <span className="venue-badge">{form.category}</span>
               </div>
-              <div className="vcard-body">
-                <h3>{form.name || "Venue name"}</h3>
+              <div className="vendor-preview-body">
+                <h3>{form.name || "Service name"}</h3>
+                <p className="vendor-preview-provider">
+                  by {form.providerName || "Provider name"}
+                </p>
                 <p className="venue-meta">
                   <i className="fas fa-map-marker-alt"></i>
                   {form.city || "City"}, {form.state || "State"}
                 </p>
-                <p className="venue-meta">
-                  <i className="fas fa-users"></i>
-                  {form.capacityMin || 0} - {form.capacityMax || 0} guests
-                </p>
-                <div className="vcard-footer">
-                  <div className="vcard-price">
-                    <strong>₹{Number(form.price || 0).toLocaleString()}</strong>
-                    <span>starting price</span>
+                {form.description && (
+                  <p className="vendor-preview-desc">{form.description}</p>
+                )}
+                {features.length > 0 && (
+                  <div className="vendor-preview-tags">
+                    {features.slice(0, 3).map((f) => (
+                      <span key={f}>{f}</span>
+                    ))}
+                    {features.length > 3 && <span>+{features.length - 3} more</span>}
                   </div>
+                )}
+                <div className="vendor-preview-footer">
+                  <strong>₹{Number(form.price || 0).toLocaleString()}</strong>
+                  <span>
+                    <i className="fas fa-star"></i> New
+                  </span>
                 </div>
+                {form.experience && (
+                  <p className="vendor-preview-exp">
+                    <i className="fas fa-award"></i> {form.experience}
+                    {/^\d+(\.\d+)?$/.test(form.experience.trim()) ? " years" : ""} experience
+                  </p>
+                )}
               </div>
             </article>
-            {form.description && (
-              <p className="preview-description">{form.description}</p>
-            )}
-
-            {created.length > 0 && (
-              <div className="admin-created">
-                <p className="admin-eyebrow">Added this session</p>
-                {created.map((v) => (
-                  <Link key={v._id} to={`/venues/${v._id}`}>
-                    <img src={v.images?.[0] || placeholderImage} alt="" />
-                    <span>{v.name}</span>
-                    <i className="fas fa-arrow-right"></i>
-                  </Link>
-                ))}
-              </div>
-            )}
           </aside>
         </div>
 
         <section className="admin-section admin-manage">
           <div className="manage-head">
             <div>
-              <h3>Manage venues</h3>
+              <h3>Manage vendors</h3>
               <p className="admin-hint">
-                {venues.length} live venue{venues.length === 1 ? "" : "s"}. Venues with
+                {vendors.length} live vendor{vendors.length === 1 ? "" : "s"}. Vendors in
                 bookings are hidden from listings but kept for those bookings.
               </p>
             </div>
             <input
               type="search"
               className="manage-search"
-              placeholder="Search by name, city or type"
+              placeholder="Search by name, category or city"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          {venuesLoading ? (
-            <p className="admin-hint">Loading venues...</p>
-          ) : shownVenues.length === 0 ? (
-            <p className="admin-hint">No venues found.</p>
+          {vendorsLoading ? (
+            <p className="admin-hint">Loading vendors...</p>
+          ) : shownVendors.length === 0 ? (
+            <p className="admin-hint">No vendors found.</p>
           ) : (
             <ul className="manage-list">
-              {shownVenues.map((v) => (
+              {shownVendors.map((v) => (
                 <li key={v._id} className="manage-row">
                   <img src={v.images?.[0] || placeholderImage} alt="" />
                   <div className="manage-info">
-                    <Link to={`/venues/${v._id}`}>{v.name}</Link>
+                    <Link to={`/services?category=${v.category}`}>{v.name}</Link>
                     <span>
-                      {v.location?.city}, {v.location?.state} ·{" "}
-                      {v.type?.replace("-", " ")} · ₹{v.price?.toLocaleString()}
+                      {v.providerName} · {categoryLabel(v.category)} ·{" "}
+                      {v.location?.city || "—"} · ₹{v.price?.toLocaleString()}
                     </span>
                   </div>
                   {confirmId === v._id ? (
                     <div className="manage-confirm">
-                      <span>Delete this venue?</span>
+                      <span>Delete this vendor?</span>
                       <button
                         type="button"
                         className="btn-danger"
                         disabled={deletingId === v._id}
-                        onClick={() => deleteVenue(v)}
+                        onClick={() => deleteVendor(v)}
                       >
                         {deletingId === v._id ? "Deleting..." : "Yes, delete"}
                       </button>
@@ -367,4 +372,4 @@ const AdminVenues = () => {
   );
 };
 
-export default AdminVenues;
+export default AdminVendors;

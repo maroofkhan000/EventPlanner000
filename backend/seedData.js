@@ -62,7 +62,7 @@ const sampleVenues = [
     price: 95000,
     amenities: ["AC Hall", "Parking", "Catering", "Decoration", "Sound System", "Projector"],
     images: [
-      img("1587271407850-8d438ca9fdf2"),
+      img("1780542900375-0cf459e38fbb"),
       img("1519167758481-83f550bb49b3"),
       img("1464366400600-7168b8af9bc3"),
     ],
@@ -142,7 +142,7 @@ const sampleVenues = [
     price: 90000,
     amenities: ["Mughal Architecture", "AC Hall", "Mandap Area", "Parking", "Sound System", "Generator Backup"],
     images: [
-      img("1587271407850-8d438ca9fdf2"),
+      img("1677768062274-fdd45caac233"),
       img("1519167758481-83f550bb49b3"),
       img("1511795409834-ef04bbd61622"),
     ],
@@ -770,7 +770,7 @@ const sampleServices = [
       "A team of 5 artists so every guest gets mehndi, with traditional Rajasthani and Arabic patterns.",
     location: UP,
     features: ["5 Artists", "Unlimited Guests (4 hrs)", "Rajasthani Designs", "Arabic Designs", "Bride Included"],
-    images: [img("1545232979-8bf68ee9b1af"), img("1520854221256-17451cc331bf")],
+    images: [img("1752824250540-b5c8387f1ad0"), img("1520854221256-17451cc331bf")],
     experience: "12 years",
     rating: 4.5,
   },

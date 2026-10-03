@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import "./Login.css";
@@ -11,6 +11,9 @@ const Login = () => {
   });
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Pages like Book Vendor send people here and expect them back afterwards
+  const location = useLocation();
+  const from = location.state?.from;
 
   const handleChange = (e) => {
     setFormData({
@@ -25,7 +28,7 @@ const Login = () => {
 
     if (result.success) {
       toast.success("Login successful!");
-      navigate("/");
+      navigate(from || "/", { replace: Boolean(from) });
     } else {
       toast.error(result.message);
     }

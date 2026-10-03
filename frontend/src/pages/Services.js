@@ -169,12 +169,20 @@ const Services = () => {
                       </p>
                     )}
 
-                    <Link
-                      to={`/package-builder?service=${service._id}`}
-                      className="add-to-package-btn"
-                    >
-                      <i className="fas fa-plus"></i> Add to Package
-                    </Link>
+                    <div className="service-actions">
+                      <Link
+                        to={`/book-vendor/${service._id}`}
+                        className="book-vendor-btn"
+                      >
+                        <i className="fas fa-calendar-check"></i> Book Now
+                      </Link>
+                      <Link
+                        to={`/package-builder?service=${service._id}`}
+                        className="add-to-package-btn"
+                      >
+                        <i className="fas fa-plus"></i> Add to Package
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -432,10 +440,35 @@ const Services = () => {
           margin-right: 4px;
         }
 
+        .service-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 18px;
+        }
+
+        .book-vendor-btn {
+          display: block;
+          padding: 12px;
+          text-align: center;
+          background: transparent;
+          color: #b8941f;
+          border: 2px solid #d4af37;
+          border-radius: 12px;
+          text-decoration: none;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .book-vendor-btn:hover {
+          background: #d4af37;
+          color: #fff;
+        }
+
         .add-to-package-btn {
           display: block;
-          margin-top: 18px;
           padding: 12px;
+          border: 2px solid #d4af37;
           text-align: center;
           background: #d4af37;
           color: #fff;

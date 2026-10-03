@@ -205,6 +205,9 @@ const Header = () => {
                         <Link to="/admin/venues">
                           <i className="fas fa-plus-circle"></i>Add venue
                         </Link>
+                        <Link to="/admin/vendors">
+                          <i className="fas fa-camera"></i>Manage vendors
+                        </Link>
                         <Link to="/admin/bookings">
                           <i className="fas fa-clipboard-list"></i>Manage bookings
                         </Link>
@@ -313,6 +316,9 @@ const Header = () => {
                   <>
                     <Link to="/admin/venues" className="mobile-link">
                       Add venue
+                    </Link>
+                    <Link to="/admin/vendors" className="mobile-link">
+                      Manage vendors
                     </Link>
                     <Link to="/admin/bookings" className="mobile-link">
                       Manage bookings

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 import UpiPayment from "../components/UpiPayment";
+import { todayIST as today, checkAvailability } from "../utils/dates";
 import "./PackageBuilder.css";
 
 const FALLBACK_IMAGE =
@@ -19,8 +20,6 @@ const CATEGORIES = [
   { value: "decoration", label: "Decoration", icon: "fa-ring" },
   { value: "mehndi", label: "Mehndi Artists", icon: "fa-hand-sparkles" },
 ];
-
-const today = () => new Date().toISOString().split("T")[0];
 
 const PackageBuilder = () => {
   const { user } = useAuth();
@@ -41,6 +40,9 @@ const PackageBuilder = () => {
   );
   const [specialRequests, setSpecialRequests] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Availability of the venue and chosen vendors on eventDate:
+  // null = not checked, otherwise { checking, available, unavailable }
+  const [dateCheck, setDateCheck] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -102,6 +104,37 @@ const PackageBuilder = () => {
 
   const chosenServices = Object.values(selectedServices);
 
+  const availabilityItems = [
+    ...(selectedVenue ? [{ kind: "venues", id: selectedVenue._id }] : []),
+    ...chosenServices.map((s) => ({ kind: "services", id: s._id })),
+  ];
+  const availabilityKey = availabilityItems.map((i) => i.id).join(",");
+
+  // Re-check whenever the date or the selection changes on the review step
+  useEffect(() => {
+    if (step !== 3 || !eventDate || !availabilityKey) {
+      setDateCheck(null);
+      return;
+    }
+    if (eventDate < today()) {
+      setDateCheck({
+        checking: false,
+        available: false,
+        unavailable: ["This date has already passed. Please pick an upcoming date."],
+      });
+      return;
+    }
+    let cancelled = false;
+    setDateCheck({ checking: true });
+    checkAvailability(availabilityItems, eventDate).then((result) => {
+      if (!cancelled) setDateCheck({ checking: false, ...result });
+    });
+    return () => {
+      cancelled = true;
+    };
+    // availabilityKey stands in for availabilityItems, which is rebuilt every render
+  }, [step, eventDate, availabilityKey]);
+
   const calculateTotal = () =>
     (selectedVenue ? selectedVenue.price : 0) +
     chosenServices.reduce((sum, s) => sum + s.price, 0);
@@ -134,11 +167,10 @@ const PackageBuilder = () => {
 
     setSubmitting(true);
     try {
-      const { data } = await axios.get(
-        `/venues/${selectedVenue._id}/availability?date=${eventDate}`
-      );
-      if (!data.available) {
-        toast.error(data.message);
+      const check = await checkAvailability(availabilityItems, eventDate);
+      if (!check.available) {
+        setDateCheck({ checking: false, ...check });
+        toast.error(check.unavailable[0]);
         return;
       }
 
@@ -426,6 +458,41 @@ const PackageBuilder = () => {
                     min={today()}
                     required
                   />
+                  {dateCheck && (
+                    <div
+                      className={`date-check ${
+                        dateCheck.checking
+                          ? "is-checking"
+                          : dateCheck.available
+                          ? "is-free"
+                          : "is-taken"
+                      }`}
+                    >
+                      {dateCheck.checking ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin"></i> Checking
+                          availability...
+                        </>
+                      ) : dateCheck.available ? (
+                        <>
+                          <i className="fas fa-check-circle"></i> Your venue and
+                          vendors are all available on this date
+                        </>
+                      ) : (
+                        <>
+                          <strong>
+                            <i className="fas fa-times-circle"></i> Not available on
+                            this date
+                          </strong>
+                          <ul>
+                            {dateCheck.unavailable.map((m) => (
+                              <li key={m}>{m}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>
@@ -470,7 +537,11 @@ const PackageBuilder = () => {
               <button
                 className="btn btn-primary"
                 onClick={handleBooking}
-                disabled={submitting}
+                disabled={
+                  submitting ||
+                  dateCheck?.checking ||
+                  (dateCheck && !dateCheck.available)
+                }
               >
                 {submitting ? "Booking..." : "Confirm Booking"}
               </button>

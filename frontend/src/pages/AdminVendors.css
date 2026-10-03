@@ -1,0 +1,98 @@
+/* Vendor card preview: matches the card on the Vendors (Services) page */
+.vendor-preview {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.vendor-preview-img {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.vendor-preview-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vendor-preview-body {
+  padding: 25px;
+}
+
+.vendor-preview-body h3 {
+  margin: 0 0 5px;
+  color: #333;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vendor-preview-provider {
+  margin: 0 0 15px;
+  color: #d4af37;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.vendor-preview-desc {
+  margin: 0 0 15px;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.vendor-preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.vendor-preview-tags span {
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: #f8f0e3;
+  color: #333;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.vendor-preview-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.vendor-preview-footer strong {
+  color: #d4af37;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.vendor-preview-footer span {
+  color: #666;
+  font-weight: 600;
+}
+
+.vendor-preview-footer i {
+  color: #ffd700;
+}
+
+.vendor-preview-exp {
+  margin: 12px 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.vendor-preview-exp i {
+  margin-right: 4px;
+  color: #d4af37;
+}

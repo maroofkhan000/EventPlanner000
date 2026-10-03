@@ -42,6 +42,19 @@ const formatDate = (d) =>
 
 const shortRef = (id) => id.slice(-8).toUpperCase();
 
+const vendorNames = (b) =>
+  (b.services || [])
+    .map((s) => s.service?.providerName || s.service?.name)
+    .filter(Boolean)
+    .join(", ");
+
+// Venue name, or the vendors for a vendor-only booking
+const bookingTitle = (b) => {
+  if (b.venue?.name) return b.venue.name;
+  const vendors = vendorNames(b);
+  return vendors ? `Vendor: ${vendors}` : "Venue removed";
+};
+
 const AdminBookings = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -84,7 +97,7 @@ const AdminBookings = () => {
     setBookings((prev) =>
       prev.map((b) =>
         b._id === updated._id
-          ? { ...b, ...updated, user: b.user, venue: b.venue }
+          ? { ...b, ...updated, user: b.user, venue: b.venue, services: b.services }
           : b
       )
     );
@@ -123,6 +136,7 @@ const AdminBookings = () => {
         b.user?.email,
         b.user?.phone,
         b.venue?.name,
+        vendorNames(b),
         b.paymentReference,
       ]
         .join(" ")
@@ -263,7 +277,7 @@ const AdminBookings = () => {
                 <li key={b._id} className="manage-row booking-row">
                   <div className="booking-main">
                     <div className="booking-title">
-                      <strong>{b.venue?.name || "Venue removed"}</strong>
+                      <strong>{bookingTitle(b)}</strong>
                       <span className="booking-ref">#{shortRef(b._id)}</span>
                     </div>
                     <span>

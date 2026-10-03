@@ -525,3 +525,36 @@
     max-width: 250px;
   }
 }
+
+/* Date availability for the chosen venue and vendors */
+.date-check {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.date-check i {
+  margin-right: 6px;
+}
+
+.date-check.is-checking {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.date-check.is-free {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.date-check.is-taken {
+  background: #fdecea;
+  color: #c62828;
+}
+
+.date-check ul {
+  margin: 6px 0 0;
+  padding-left: 22px;
+}

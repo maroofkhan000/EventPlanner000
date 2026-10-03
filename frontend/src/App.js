@@ -18,9 +18,11 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Bookings from "./pages/Bookings";
 import PackageBuilder from "./pages/PackageBuilder";
+import BookVendor from "./pages/BookVendor";
 import VenueDetails from "./pages/VenueDetails";
 import AdminVenues from "./pages/AdminVenues";
 import AdminBookings from "./pages/AdminBookings";
+import AdminVendors from "./pages/AdminVendors";
 
 // Context
 import { AuthProvider } from "./context/AuthContext";
@@ -44,12 +46,14 @@ function App() {
               <Route path="/contact" element={<Destination />} />
               <Route path="/about" element={<About />} />
               <Route path="/package-builder" element={<PackageBuilder />} />
+              <Route path="/book-vendor/:id" element={<BookVendor />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/bookings" element={<Bookings />} />
               <Route path="/admin/venues" element={<AdminVenues />} />
               <Route path="/admin/bookings" element={<AdminBookings />} />
+              <Route path="/admin/vendors" element={<AdminVendors />} />
             </Routes>
           </main>
           <Footer />

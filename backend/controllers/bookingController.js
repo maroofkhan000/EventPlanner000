@@ -2,6 +2,8 @@ const Booking = require("../models/Booking");
 const Venue = require("../models/Venue");
 const Service = require("../models/Service");
 const { isVenueBooked } = require("./venueController");
+const { isServiceBooked } = require("./serviceController");
+const { todayIST, isDateStr } = require("../utils/dates");
 
 // Create booking
 const createBooking = async (req, res) => {
@@ -10,37 +12,44 @@ const createBooking = async (req, res) => {
       req.body;
     const guestCount = Number(req.body.guestCount);
 
-    if (!venueId) {
-      return res.status(400).json({ message: "Please select a venue" });
+    // A booking needs a venue, at least one vendor, or both
+    if (!venueId && services.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Please select a venue or a vendor to book" });
     }
 
-    const venue = await Venue.findById(venueId);
-    if (!venue || !venue.isActive) {
-      return res.status(404).json({ message: "Venue not found" });
+    let venue = null;
+    if (venueId) {
+      venue = await Venue.findById(venueId);
+      if (!venue || !venue.isActive) {
+        return res.status(404).json({ message: "Venue not found" });
+      }
     }
 
     const dateStr = String(eventDate || "").slice(0, 10);
-    const today = new Date().toISOString().split("T")[0];
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || dateStr < today) {
+    if (!isDateStr(dateStr) || dateStr < todayIST()) {
       return res
         .status(400)
         .json({ message: "Please choose a valid upcoming event date" });
     }
 
-    if (
-      !Number.isInteger(guestCount) ||
-      guestCount < venue.capacity.min ||
-      guestCount > venue.capacity.max
-    ) {
-      return res.status(400).json({
-        message: `Guest count must be between ${venue.capacity.min} and ${venue.capacity.max} for this venue`,
-      });
+    if (!Number.isInteger(guestCount) || guestCount < 1) {
+      return res.status(400).json({ message: "Please enter the number of guests" });
     }
 
-    if (await isVenueBooked(venue._id, dateStr)) {
-      return res
-        .status(409)
-        .json({ message: "This venue is already booked on that date" });
+    if (venue) {
+      if (guestCount < venue.capacity.min || guestCount > venue.capacity.max) {
+        return res.status(400).json({
+          message: `Guest count must be between ${venue.capacity.min} and ${venue.capacity.max} for this venue`,
+        });
+      }
+
+      if (await isVenueBooked(venue._id, dateStr)) {
+        return res
+          .status(409)
+          .json({ message: "This venue is already booked on that date" });
+      }
     }
 
     // Prices come from the database, not the client
@@ -55,6 +64,15 @@ const createBooking = async (req, res) => {
         .json({ message: "One or more selected services are unavailable" });
     }
 
+    // Each vendor can take one booking per day
+    for (const doc of serviceDocs) {
+      if (await isServiceBooked(doc._id, dateStr)) {
+        return res.status(409).json({
+          message: `${doc.providerName} (${doc.name}) is already booked on that date. Please pick another date or vendor.`,
+        });
+      }
+    }
+
     const bookingServices = serviceDocs.map((doc) => ({
       service: doc._id,
       quantity: 1,
@@ -63,11 +81,12 @@ const createBooking = async (req, res) => {
     }));
 
     const totalAmount =
-      venue.price + bookingServices.reduce((sum, s) => sum + s.price, 0);
+      (venue ? venue.price : 0) +
+      bookingServices.reduce((sum, s) => sum + s.price, 0);
 
     const booking = new Booking({
       user: req.user._id,
-      venue: venue._id,
+      venue: venue?._id,
       services: bookingServices,
       eventDate: dateStr,
       guestCount,
@@ -226,6 +245,7 @@ const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({})
       .populate("venue", "name location")
+      .populate("services.service", "name providerName category")
       .populate("user", "name email phone")
       .sort({ createdAt: -1 })
       .limit(1000);

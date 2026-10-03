@@ -1,16 +1,7 @@
-const fs = require("fs");
-const path = require("path");
 const Venue = require("../models/Venue");
 const Booking = require("../models/Booking");
-
-// Start and end of the calendar day (UTC) for a YYYY-MM-DD string
-const dayRange = (dateStr) => {
-  const start = new Date(`${dateStr}T00:00:00.000Z`);
-  if (isNaN(start)) return null;
-  const end = new Date(start);
-  end.setUTCDate(end.getUTCDate() + 1);
-  return { start, end };
-};
+const { uploadedUrls, removeUploadedImages } = require("../middleware/upload");
+const { todayIST, dayRange } = require("../utils/dates");
 
 // True if the venue already has an active booking on that day
 const isVenueBooked = async (venueId, dateStr) => {
@@ -82,13 +73,12 @@ const getVenueAvailability = async (req, res) => {
       return res.status(400).json({ message: "A valid date is required" });
     }
 
-    const today = new Date().toISOString().split("T")[0];
-    if (date < today) {
+    if (date < todayIST()) {
       return res.json({ available: false, message: "Date is in the past" });
     }
 
     const venue = await Venue.findById(req.params.id);
-    if (!venue) {
+    if (!venue || !venue.isActive) {
       return res.status(404).json({ message: "Venue not found" });
     }
 
@@ -122,9 +112,7 @@ const uploadVenueImages = (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: "No images uploaded" });
   }
-  const base = `${req.protocol}://${req.get("host")}`;
-  const urls = req.files.map((f) => `${base}/uploads/venues/${f.filename}`);
-  res.status(201).json({ urls });
+  res.status(201).json({ urls: uploadedUrls(req, "venues") });
 };
 
 // Delete venue. Venues with bookings are hidden instead, so those
@@ -152,12 +140,7 @@ const deleteVenue = async (req, res) => {
     await venue.deleteOne();
 
     // Remove photos that were uploaded to this server
-    venue.images
-      .map((url) => url.match(/\/uploads\/venues\/([\w.-]+)$/))
-      .filter(Boolean)
-      .forEach(([, file]) => {
-        fs.unlink(path.join(__dirname, "..", "uploads", "venues", file), () => {});
-      });
+    removeUploadedImages(venue.images, "venues");
 
     res.json({ message: `${venue.name} was deleted` });
   } catch (error) {
