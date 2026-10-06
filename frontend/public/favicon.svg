@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8e1f3c"/>
+      <stop offset="1" stop-color="#4a0c1e"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbeaa0"/>
+      <stop offset="0.45" stop-color="#d4af37"/>
+      <stop offset="1" stop-color="#a5791a"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f3dc8a"/>
+    </linearGradient>
+    <clipPath id="crossTop">
+      <rect x="222" y="176" width="68" height="84"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="22" y="22" width="468" height="468" rx="92" fill="none" stroke="#d4af37" stroke-opacity="0.45" stroke-width="6"/>
+
+  <!-- interlocking rings -->
+  <circle cx="206" cy="300" r="96" fill="none" stroke="url(#gold)" stroke-width="30"/>
+  <circle cx="306" cy="300" r="96" fill="none" stroke="#4a0c1e" stroke-width="40"/>
+  <circle cx="306" cy="300" r="96" fill="none" stroke="url(#gold)" stroke-width="30"/>
+  <g clip-path="url(#crossTop)">
+    <circle cx="206" cy="300" r="96" fill="none" stroke="#4a0c1e" stroke-width="40"/>
+    <circle cx="206" cy="300" r="96" fill="none" stroke="url(#gold)" stroke-width="30"/>
+  </g>
+
+  <!-- diamond -->
+  <polygon points="230,84 282,84 302,108 256,158 210,108" fill="url(#gem)" stroke="#d4af37" stroke-width="6" stroke-linejoin="round"/>
+  <polyline points="210,108 302,108" fill="none" stroke="#d4af37" stroke-width="5"/>
+  <polyline points="230,84 244,108 256,158 268,108 282,84" fill="none" stroke="#d4af37" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- sparkle -->
+  <path d="M352 96 l7 19 19 7 -19 7 -7 19 -7 -19 -19 -7 19 -7z" fill="#fbeaa0"/>
+</svg>
