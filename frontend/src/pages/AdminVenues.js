@@ -21,7 +21,7 @@ const emptyForm = {
 };
 
 const placeholderImage =
-  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80";
+  "/images/1519225421980-715cb0215aed.jpg";
 
 const AdminVenues = () => {
   const { user } = useAuth();

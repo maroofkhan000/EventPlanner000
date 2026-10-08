@@ -2,8 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./About.css";
 
-const photo = (id, w = 900) =>
-  `https://images.unsplash.com/photo-${id}?ixlib=rb-4.0.3&auto=format&fit=crop&w=${w}&q=80`;
+const photo = (id) => `/images/${id}.jpg`;
 
 const stats = [
   { value: "500+", label: "Weddings planned" },
@@ -121,7 +120,7 @@ const About = () => {
             />
             <img
               className="about-img-small"
-              src={photo("1515934751635-c81c6bc9a2d8", 500)}
+              src={photo("1515934751635-c81c6bc9a2d8")}
               alt="Wedding rings on a bed of roses"
             />
           </div>

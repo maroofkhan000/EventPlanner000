@@ -3,9 +3,8 @@ const Venue = require("./models/Venue");
 const Service = require("./models/Service");
 require("dotenv").config();
 
-// Build an Unsplash image URL from a photo id
-const img = (id) =>
-  `https://images.unsplash.com/photo-${id}?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80`;
+// Local photo path (served from frontend/public/images)
+const img = (id) => `/images/${id}.jpg`;
 
 const UP = { city: "Lucknow", state: "Uttar Pradesh" };
 

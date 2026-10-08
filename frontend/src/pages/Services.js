@@ -35,24 +35,24 @@ const Services = () => {
 
     const categoryImages = {
       catering:
-        "https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1555244162-803834f70033.jpg",
       makeup:
-        "https://images.unsplash.com/photo-1596464716127-f2a82984de30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1596464716127-f2a82984de30.jpg",
       photography:
-        "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1554048612-b6a482bc67e5.jpg",
       videography:
-        "https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1485846234645-a62644f84728.jpg",
       decoration:
-        "https://images.unsplash.com/photo-1457089328109-e5d9bd499191?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1457089328109-e5d9bd499191.jpg",
       music:
-        "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1470229722913-7c0e2dbbafd3.jpg",
       mehndi:
-        "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+        "/images/1545232979-8bf68ee9b1af.jpg",
     };
 
     return (
       categoryImages[category] ||
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+      "/images/1519225421980-715cb0215aed.jpg"
     );
   };
 
@@ -114,7 +114,7 @@ const Services = () => {
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src =
-                          "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80";
+                          "/images/1519225421980-715cb0215aed.jpg";
                       }}
                     />
                     <div className="service-category-badge">

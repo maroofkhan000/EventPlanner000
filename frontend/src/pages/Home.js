@@ -9,7 +9,7 @@ const homeServices = [
     description: "Delicious food from top chefs",
     icon: "fa-utensils",
     image:
-      "https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      "/images/1555244162-803834f70033.jpg",
   },
   {
     category: "makeup",
@@ -17,7 +17,7 @@ const homeServices = [
     description: "Professional bridal makeup",
     icon: "fa-palette",
     image:
-      "https://images.unsplash.com/photo-1596464716127-f2a82984de30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      "/images/1596464716127-f2a82984de30.jpg",
   },
   {
     category: "photography",
@@ -25,7 +25,7 @@ const homeServices = [
     description: "Capture special moments",
     icon: "fa-camera",
     image:
-      "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      "/images/1554048612-b6a482bc67e5.jpg",
   },
   {
     category: "videography",
@@ -33,7 +33,7 @@ const homeServices = [
     description: "Professional wedding films",
     icon: "fa-video",
     image:
-      "https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80",
+      "/images/1485846234645-a62644f84728.jpg",
   },
 ];
 

@@ -8,7 +8,7 @@ import { todayIST as today, checkAvailability } from "../utils/dates";
 import "./PackageBuilder.css";
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80";
+  "/images/1519225421980-715cb0215aed.jpg";
 
 // Display order and labels for service categories
 const CATEGORIES = [
