@@ -1,12 +1,18 @@
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const multer = require("multer");
 
 const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-// Photo upload for one folder under backend/uploads (field "images", up to 10)
+// Vercel's disk is read-only apart from /tmp (files there don't persist)
+const uploadsRoot = process.env.VERCEL
+  ? path.join(os.tmpdir(), "uploads")
+  : path.join(__dirname, "..", "uploads");
+
+// Photo upload for one folder under uploadsRoot (field "images", up to 10)
 const imageUpload = (folder, prefix) => {
-  const dir = path.join(__dirname, "..", "uploads", folder);
+  const dir = path.join(uploadsRoot, folder);
   fs.mkdirSync(dir, { recursive: true });
 
   const storage = multer.diskStorage({
@@ -52,7 +58,7 @@ const removeUploadedImages = (urls, folder) => {
     .map((url) => url.match(pattern))
     .filter(Boolean)
     .forEach(([, file]) => {
-      fs.unlink(path.join(__dirname, "..", "uploads", folder, file), () => {});
+      fs.unlink(path.join(uploadsRoot, folder, file), () => {});
     });
 };
 
