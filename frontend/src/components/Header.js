@@ -101,6 +101,9 @@ const Header = () => {
             </button>
             {openMenu === "venues" && (
               <div className="dropdown mega">
+                <Link to="/venues" className="dropdown-all">
+                  View all venues <i className="fas fa-arrow-right"></i>
+                </Link>
                 <div className="dropdown-col">
                   <p className="dropdown-heading">By type</p>
                   {venueTypes.map((t) => (
@@ -118,9 +121,6 @@ const Header = () => {
                     </Link>
                   ))}
                 </div>
-                <Link to="/venues" className="dropdown-footer">
-                  View all venues <i className="fas fa-arrow-right"></i>
-                </Link>
               </div>
             )}
           </div>
@@ -131,6 +131,9 @@ const Header = () => {
             </button>
             {openMenu === "vendors" && (
               <div className="dropdown">
+                <Link to="/services" className="dropdown-all">
+                  All vendors <i className="fas fa-arrow-right"></i>
+                </Link>
                 <div className="dropdown-col">
                   {vendorCategories.map((v) => (
                     <Link key={v.value} to={`/services?category=${v.value}`}>
@@ -139,9 +142,6 @@ const Header = () => {
                     </Link>
                   ))}
                 </div>
-                <Link to="/services" className="dropdown-footer">
-                  All vendors <i className="fas fa-arrow-right"></i>
-                </Link>
               </div>
             )}
           </div>

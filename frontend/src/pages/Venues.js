@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import FilterBar, { VENUE_TYPES } from "../components/FilterBar";
 import "./Venues.css";
 
 const Venues = () => {
@@ -77,61 +78,16 @@ const Venues = () => {
   return (
     <div className="venues-page">
       <div className="container venues-layout">
-        {/* Filters */}
-        <div className="filters-card">
-          <div className="filters-head">
-            <h3>Filter Venues</h3>
-            <button type="button" className="clear-btn" onClick={clearFilters}>
-              Clear Filters
-            </button>
-          </div>
-
-          <div className="filters-grid">
-            <label className="field">
-              <span>Venue Type</span>
-              <select name="type" value={filters.type} onChange={handleFilterChange}>
-                <option value="">All Venue Types</option>
-                <option value="marriage-lawn">Marriage Lawn</option>
-                <option value="hotel">Luxury Hotel</option>
-                <option value="destination">Destination</option>
-                <option value="banquet-hall">Banquet Hall</option>
-              </select>
-            </label>
-
-            <label className="field">
-              <span>City</span>
-              <input
-                type="text"
-                name="city"
-                placeholder="Search by city..."
-                value={filters.city}
-                onChange={handleFilterChange}
-              />
-            </label>
-
-            <label className="field">
-              <span>Min Price</span>
-              <input
-                type="number"
-                name="minPrice"
-                placeholder="Minimum budget"
-                value={filters.minPrice}
-                onChange={handleFilterChange}
-              />
-            </label>
-
-            <label className="field">
-              <span>Max Price</span>
-              <input
-                type="number"
-                name="maxPrice"
-                placeholder="Maximum budget"
-                value={filters.maxPrice}
-                onChange={handleFilterChange}
-              />
-            </label>
-          </div>
-        </div>
+        <FilterBar
+          title="Filter Venues"
+          typeName="type"
+          typeLabel="Venue Type"
+          allTypesLabel="All Venue Types"
+          typeOptions={VENUE_TYPES}
+          values={filters}
+          onChange={handleFilterChange}
+          onClear={clearFilters}
+        />
 
         {/* Results */}
         <section className="venues-results">

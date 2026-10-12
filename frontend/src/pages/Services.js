@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import FilterBar, { VENDOR_TYPES, EMPTY_FILTERS } from "../components/FilterBar";
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -10,21 +11,41 @@ const Services = () => {
   const selectedCategory = searchParams.get("category") || "";
   const setSelectedCategory = (category) =>
     setSearchParams(category ? { category } : {});
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   useEffect(() => {
     fetchServices();
-  }, [selectedCategory]);
+  }, [selectedCategory, filters]);
 
   const fetchServices = async () => {
     try {
-      const params = selectedCategory ? `?category=${selectedCategory}` : "";
-      const response = await axios.get(`/services${params}`);
+      const params = new URLSearchParams();
+      if (selectedCategory) params.append("category", selectedCategory);
+      if (filters.city) params.append("city", filters.city);
+      if (filters.minPrice) params.append("minPrice", filters.minPrice);
+      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
+      params.append("limit", "100"); // API defaults to 10 per page
+
+      const response = await axios.get(`/services?${params}`);
       setServices(response.data.services || []);
     } catch (error) {
       console.error("Error fetching services:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (e) => {
+    if (e.target.name === "category") {
+      setSelectedCategory(e.target.value);
+    } else {
+      setFilters({ ...filters, [e.target.name]: e.target.value });
+    }
+  };
+
+  const clearFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setSelectedCategory("");
   };
 
   // Function to get category-specific images
@@ -94,6 +115,17 @@ const Services = () => {
             ))}
           </div>
         </div>
+
+        <FilterBar
+          title="Filter Vendors"
+          typeName="category"
+          typeLabel="Vendor Type"
+          allTypesLabel="All Vendor Types"
+          typeOptions={VENDOR_TYPES}
+          values={{ ...filters, category: selectedCategory }}
+          onChange={handleFilterChange}
+          onClear={clearFilters}
+        />
 
         {/* Services Grid */}
         <div className="services-grid-section">
@@ -192,13 +224,10 @@ const Services = () => {
               <i className="fas fa-search no-results-icon"></i>
               <h3>No Services Found</h3>
               <p>
-                We couldn't find any services in this category. Try selecting a
-                different category.
+                We couldn't find any services matching your filters. Try
+                adjusting or clearing them.
               </p>
-              <button
-                className="clear-filter-btn"
-                onClick={() => setSelectedCategory("")}
-              >
+              <button className="clear-filter-btn" onClick={clearFilters}>
                 Show All Services
               </button>
             </div>
@@ -272,7 +301,7 @@ const Services = () => {
 
         /* Services Grid */
         .services-grid-section {
-          padding: 40px 0 80px;
+          padding: 0 0 80px;
         }
 
         .loading-container {

@@ -64,8 +64,12 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-});
+// Vercel runs the exported app as a function; locally we start a server
+module.exports = app;
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+}

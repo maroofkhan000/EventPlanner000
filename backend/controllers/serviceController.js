@@ -48,10 +48,16 @@ const getServiceAvailability = async (req, res) => {
 // Get all services
 const getServices = async (req, res) => {
   try {
-    const { category, page = 1, limit = 10 } = req.query;
+    const { category, city, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
 
     let query = { available: true };
     if (category) query.category = category;
+    if (city) query["location.city"] = new RegExp(city, "i");
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseInt(minPrice);
+      if (maxPrice) query.price.$lte = parseInt(maxPrice);
+    }
 
     const services = await Service.find(query)
       .limit(limit * 1)

@@ -4,6 +4,12 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 import UpiPayment from "../components/UpiPayment";
+import FilterBar, {
+  VENUE_TYPES,
+  VENDOR_TYPES,
+  EMPTY_FILTERS,
+  matchesFilters,
+} from "../components/FilterBar";
 import { todayIST as today, checkAvailability } from "../utils/dates";
 import "./PackageBuilder.css";
 
@@ -43,6 +49,11 @@ const PackageBuilder = () => {
   // Availability of the venue and chosen vendors on eventDate:
   // null = not checked, otherwise { checking, available, unavailable }
   const [dateCheck, setDateCheck] = useState(null);
+  const [venueFilters, setVenueFilters] = useState({ ...EMPTY_FILTERS, type: "" });
+  const [serviceFilters, setServiceFilters] = useState({
+    ...EMPTY_FILTERS,
+    category: "",
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -103,6 +114,13 @@ const PackageBuilder = () => {
   };
 
   const chosenServices = Object.values(selectedServices);
+
+  const filteredVenues = venues.filter((v) =>
+    matchesFilters(v, venueFilters, "type")
+  );
+  const filteredServices = services.filter((s) =>
+    matchesFilters(s, serviceFilters, "category")
+  );
 
   const availabilityItems = [
     ...(selectedVenue ? [{ kind: "venues", id: selectedVenue._id }] : []),
@@ -252,8 +270,25 @@ const PackageBuilder = () => {
         {step === 1 && (
           <div className="builder-step">
             <h2>Choose Your Wedding Venue</h2>
+            <FilterBar
+              title="Filter Venues"
+              typeName="type"
+              typeLabel="Venue Type"
+              allTypesLabel="All Venue Types"
+              typeOptions={VENUE_TYPES}
+              values={venueFilters}
+              onChange={(e) =>
+                setVenueFilters({ ...venueFilters, [e.target.name]: e.target.value })
+              }
+              onClear={() => setVenueFilters({ ...EMPTY_FILTERS, type: "" })}
+            />
+            {filteredVenues.length === 0 && (
+              <p className="empty-note">
+                No venues match these filters. Try adjusting or clearing them.
+              </p>
+            )}
             <div className="venues-grid">
-              {venues.map((venue) => (
+              {filteredVenues.map((venue) => (
                 <div
                   key={venue._id}
                   className={`venue-option ${
@@ -299,9 +334,29 @@ const PackageBuilder = () => {
               Pick one provider per category, or skip any you don't need. Click
               a selected card again to remove it.
             </p>
+            <FilterBar
+              title="Filter Vendors"
+              typeName="category"
+              typeLabel="Vendor Type"
+              allTypesLabel="All Vendor Types"
+              typeOptions={VENDOR_TYPES}
+              values={serviceFilters}
+              onChange={(e) =>
+                setServiceFilters({
+                  ...serviceFilters,
+                  [e.target.name]: e.target.value,
+                })
+              }
+              onClear={() => setServiceFilters({ ...EMPTY_FILTERS, category: "" })}
+            />
+            {filteredServices.length === 0 && (
+              <p className="empty-note">
+                No vendors match these filters. Try adjusting or clearing them.
+              </p>
+            )}
 
             {CATEGORIES.map((cat) => {
-              const list = services.filter((s) => s.category === cat.value);
+              const list = filteredServices.filter((s) => s.category === cat.value);
               if (list.length === 0) return null;
               return (
                 <div key={cat.value} className="service-category">

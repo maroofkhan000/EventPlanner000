@@ -1,0 +1,114 @@
+/* Filter card shared by the venues, vendors and package builder pages */
+.filters-card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 17px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  margin-bottom: 42px;
+}
+
+.filters-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 21px;
+}
+
+.filters-head h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.18rem;
+  font-weight: 600;
+}
+
+.clear-btn {
+  background: transparent;
+  border: 2px solid #d4af37;
+  color: #d4af37;
+  padding: 7px 17px;
+  border-radius: 21px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.76rem;
+  transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+  background: #d4af37;
+  color: #fff;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 21px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.8rem;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 12px 13px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.84rem;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.field select {
+  cursor: pointer;
+  appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23d4af37' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  background-size: 10px;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #d4af37;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* Tablet: 2x2 filters */
+@media (max-width: 992px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+/* Phone: compact filters */
+@media (max-width: 640px) {
+  .filters-card {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .filters-head {
+    margin-bottom: 14px;
+  }
+
+  .filters-grid {
+    gap: 12px;
+  }
+}
