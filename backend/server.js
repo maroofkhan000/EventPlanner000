@@ -54,8 +54,15 @@ app.get("/", (req, res) => {
   res.json({ message: "Wedding Planner API is running!" });
 });
 
-// API health check
-app.get("/api/health", (req, res) => {
+// API health check. On a cold start (Vercel) the first connection may still
+// be opening, so wait up to 8 seconds for it before reporting.
+app.get("/api/health", async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    await Promise.race([
+      mongoose.connection.asPromise(),
+      new Promise((resolve) => setTimeout(resolve, 8000)),
+    ]).catch(() => {});
+  }
   res.json({
     status: "OK",
     timestamp: new Date().toISOString(),
